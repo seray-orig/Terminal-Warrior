@@ -23,4 +23,10 @@
     <EmbeddedResource Include="Game\scenes\MainMenu.lua" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Scenes\MainSceneTest.lua">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
