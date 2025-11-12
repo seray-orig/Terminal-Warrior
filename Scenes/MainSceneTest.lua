@@ -1,16 +1,15 @@
--- Стандарт имён функций - имена абстрактных классов
--- Сцена должна строиться на основе этих трёх функций
+x = (x or 1) + 1
 
-function InputHandler()
-
-end
-
-function EngineUpdater()
-
+local function write(...)
+	local content = {}
+	for _, value in ipairs({...}) do
+    	table.insert(content, value)
+  	end
+	converter(content)
 end
 
 function FrameRenderer()
 	frameClear()
-	cursorPos(0, 0)
-	write('Это UTF-8 Ура!')
+	cursorPos(15, 10)
+	write('g =', ' ', 10)
 end
