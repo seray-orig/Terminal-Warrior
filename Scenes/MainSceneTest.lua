@@ -13,3 +13,4 @@ function FrameRenderer()
 	cursorPos(15, 10)
 	write('g =', ' ', 10)
 end
+
