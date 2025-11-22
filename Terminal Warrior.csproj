@@ -10,6 +10,8 @@
 
   <ItemGroup>
     <None Remove="cfg\config.lua" />
+    <None Remove="Game\scenes\cmd.lua" />
+    <None Remove="Game\scenes\Gameplay.lua" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,12 +22,14 @@
     <EmbeddedResource Include="cfg\config.lua">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
+    <EmbeddedResource Include="Game\scenes\cmd.lua" />
+    <EmbeddedResource Include="Game\scenes\Gameplay.lua" />
     <EmbeddedResource Include="Game\scenes\MainMenu.lua" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="scenes\MainSceneTest.lua">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>
   </ItemGroup>
 

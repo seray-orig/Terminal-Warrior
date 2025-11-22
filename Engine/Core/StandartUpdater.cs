@@ -1,9 +1,15 @@
 ﻿
+using Terminal_Warrior.Game.scenes;
+
 namespace Terminal_Warrior.Engine.Core
 {
     public class StandartUpdater : EngineUpdater
     {
-        public StandartUpdater(GameState state) : base(state) { }
+        private readonly LuaSceneManager _luaScenes;
+        public StandartUpdater(GameState state, LuaSceneManager luaScenes) : base(state)
+        {
+            _luaScenes = luaScenes;
+        }
 
         public override void Update()
         {
@@ -19,7 +25,7 @@ namespace Terminal_Warrior.Engine.Core
             }
 
             // Сперва монтируются скрипты внутренних папок
-            MountScenes("scenes");
+            MountDirectory("scenes");
 
             // Вторичное группированное монтирование скриптов из папки addons
             var AddonsList = Directory.GetDirectories("addons");
@@ -32,7 +38,7 @@ namespace Terminal_Warrior.Engine.Core
                     switch (directoryName)
                     {
                         case "scenes":
-                            MountScenes(directoryPath);
+                            MountDirectory(directoryPath);
                             break;
                     }
                 }
@@ -42,7 +48,7 @@ namespace Terminal_Warrior.Engine.Core
         /// <summary>
         /// Монтирование скриптов сцен из указанной папки
         /// </summary>
-        private void MountScenes(string path)
+        private void MountDirectory(string path)
         {
             var FileList = Directory.GetFiles(path, "*.lua");
             foreach (string filePath in FileList)

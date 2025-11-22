@@ -12,6 +12,11 @@ namespace Terminal_Warrior.Engine.Core
 
         public override void Render()
         {
+            // Очистка консоли перед отрисовкой нового кадра
+            try { Console.SetCursorPosition(0, 0); }
+            finally { Console.Write(_state.ScreenSymbolsMax); }
+            try { Console.SetCursorPosition(0, 0); } catch { }
+
             _luaScenes.RunLua(_state.Scenes, _state.CurrentScene, "FrameRenderer");
         }
     }

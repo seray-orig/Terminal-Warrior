@@ -10,7 +10,6 @@ function EngineUpdater()
 end
 
 function FrameRenderer()
-	frameClear()
-	--cursorPos(0, 0)
-	write('Это ЮТФ-8!!! BOOM!')
+	print('Это ЮТФ-8!!! BOOM!')
+	Write('g ', 10 + '5') Write(' Cyka')
 end

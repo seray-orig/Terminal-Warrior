@@ -1,5 +1,5 @@
-﻿using System.Text;
-using NLua;
+﻿using NLua;
+using System.Text;
 using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.Game.scenes;
 
@@ -13,12 +13,12 @@ namespace Terminal_Warrior.Engine
         private EngineUpdater EngineUpdater;
         private FrameRenderer FrameRenderer;
 
-        public Game() 
+        public Game()
         {
             State = new GameState();
             LuaSceneManager = new LuaSceneManager(State._G);
-            InputHandler = new LuaInputHandler(State);
-            EngineUpdater = new StandartUpdater(State);
+            InputHandler = new LuaInputHandler(State, LuaSceneManager);
+            EngineUpdater = new StandartUpdater(State, LuaSceneManager);
             FrameRenderer = new FullScreenRenderer(State, LuaSceneManager);
         }
         public void Run()
@@ -60,14 +60,14 @@ namespace Terminal_Warrior.Engine
 
                 // Костыль на "фиксированное" значение видимости курсора
                 Console.CursorVisible = false;
-                
+
                 InputHandler.Handle();
                 EngineUpdater.Update();
                 FrameRenderer.Render();
 
                 // Подгон под фпс
                 int elapsed = (int)(DateTime.Now - frameStart).TotalMilliseconds;
-                int delay = Math.Max(0, ( 1000 / Math.Max(1, Convert.ToInt32(State._G["fps_target"])) ) - elapsed);
+                int delay = Math.Max(0, (1000 / Math.Max(1, Convert.ToInt32(State._G["fps_target"]))) - elapsed);
                 Thread.Sleep(delay);
             }
         }
@@ -86,32 +86,40 @@ namespace Terminal_Warrior.Engine
                     "ScrH", (Func<int>)(() => { return State.ScreenHeight; })
                 },
                 {
-                    "frameClear",
-                    () =>
+                    "SetDebugChar", (Action<string>)(
+                    (symbol) =>
                     {
-                        try { Console.SetCursorPosition(0, 0); }
-                        finally { Console.Write(new string(State.DebugChar, State.ScreenSymbolsMax)); }
-                        try { Console.SetCursorPosition(0, 0); } catch { }
-                    }
+                        State.SetDebugChar(Convert.ToChar(symbol));
+                    })
                 },
-                {
-                    "converter", (Action<LuaTable>)(args => {
+                {   // Эти функции используются в GameState внутри Lua окружения
+                    // Обычный костыль, пишите просто Write() & Writeln()
+                    "_Write", (Action<LuaTable>)(args => {
                         foreach (var item in args.Values)
                             Console.Write(item);
                     })
                 },
                 {
-                    "writeln", (Action<object>)(args => {
-                        //foreach (var item in args.Values)
-                            Console.Write(args);
+                    "_Writeln", (Action<LuaTable>)(args => {
+                        foreach (var item in args.Values)
+                            Console.Write(item);
                         Console.WriteLine();
                     })
                 },
                 {
-                    "cursorPos", (Action<int, int>)((left, top) => { try { Console.SetCursorPosition(left, top); } catch { } })
+                    "SetCursorPos", (Action<int, int>)((left, top) => { try { Console.SetCursorPosition(left, top); } catch { } })
+                },
+                { // Cursor Left
+                    "CurL", (Func<int>)(() => { return Console.GetCursorPosition().Left; })
+                },
+                { // Cursor Top
+                    "CurT", (Func<int>)(() => { return Console.GetCursorPosition().Top; })
                 },
                 {
-                    "setScene", (Action<string>)(sceneName => { State.SetScene(sceneName); })
+                    "SetScene", (Action<string>)(sceneName => { State.SetScene(sceneName); })
+                },
+                {
+                    "_ShutDownGame", (Action)(() =>  { State.ShutDownGame(); })
                 },
             };
         }

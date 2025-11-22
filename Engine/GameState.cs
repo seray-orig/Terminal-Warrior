@@ -1,5 +1,4 @@
 ﻿using NLua;
-using System;
 using System.Reflection;
 using System.Text;
 using Terminal_Warrior.Logger;
@@ -15,9 +14,37 @@ namespace Terminal_Warrior.Engine
         public void Initialize_G()
         {
             _G.State.Encoding = Encoding.UTF8;
+
+            // Передать из Lua в C# множество аргументов можно только как LuaTable. object[] вызывает ошибку
+            // было бы славно реализовать Write & Writeln с приёмом множества аргументов
+            // так вот это костыль
+            _G.DoString("""
+
+                println = print
+                function print(...)
+                    io.write(...)
+                end
+
+                function Write(...)
+                    local content = {}
+                    for _, value in ipairs({...}) do
+                        table.insert(content, value)
+                    end
+                    _Write(content)
+                end
+                function Writeln(...)
+                    local content = {}
+                    for _, value in ipairs({...}) do
+                        table.insert(content, value)
+                    end
+                    _Writeln(content)
+                end
+
+             """);
         }
         private string configPath { get; } = "cfg/config.lua";
-        public void LoadConfig() {
+        public void LoadConfig()
+        {
             if (!File.Exists(configPath))
                 CreateConfig();
             try
@@ -59,23 +86,25 @@ namespace Terminal_Warrior.Engine
 
         public int ScreenWidth { get; private set; }
         public int ScreenHeight { get; private set; }
-        public int ScreenSymbolsMax { get; private set; }
+        public StringBuilder ScreenSymbolsMax { get; private set; } = new StringBuilder();
         public void UpdateScreenSize(int Width, int Height)
         {
             ScreenWidth = Width; ScreenHeight = Height;
-            ScreenSymbolsMax = Width * Height;
+            ScreenSymbolsMax.Clear();
+            ScreenSymbolsMax.Append(DebugChar, Width * Height);
         }
         public static FileLogger ErrorLogger = new FileLogger("logs/errors.txt", new FileSystemService(), new MessageValidator());
 
         //
         //  Рендер
         //
-        public char DebugChar { get; } = ' ';
+        public char DebugChar { get; private set; } = ' ';
+        public void SetDebugChar(char symbol) { DebugChar = symbol; }
 
         //
         //  Сцены
         //
-        public StringBuilder _currentScene = new StringBuilder("MainSceneTest");
+        public StringBuilder _currentScene = new StringBuilder("MainMenuTest");
         public string CurrentScene { get { return _currentScene.ToString(); } }
         public void SetScene(string scene) { _currentScene.Clear(); _currentScene.Append(scene); }
         public Dictionary<string, (string, string)> Scenes { get; private set; } = new Dictionary<string, (string, string)>() // Имя сцены = Lua код
@@ -85,6 +114,18 @@ namespace Terminal_Warrior.Engine
                 "Internal",
                 new StreamReader(Assembly.GetExecutingAssembly()
                 .GetManifestResourceStream("Terminal_Warrior.Game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
+            },
+            {
+                "Gameplay", (
+                "Internal",
+                new StreamReader(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
+            },
+            {
+                "cmd", (
+                "Internal",
+                new StreamReader(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
             },
         };
         public void AddScene(string Name, string LuaCode)
