@@ -28,6 +28,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="scenes\MainMenuTest.lua">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="scenes\MainSceneTest.lua">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </None>

@@ -4,28 +4,34 @@ linesStory = linesStory or {}
 function InputHandler()
     if (_readKey == 'Enter') then
         table.insert(linesStory, 1, line)
+        if (#linesStory > 7) then
+            for i = 8, #linesStory do linesStory[i] = nil end
+        end
         line = {}
+    elseif (_readKey == 'Backspace') then
+        table.remove(line, #line)
+    else
+        table.insert(line, _readChar)
     end
-    table.insert(line, _readChar)
 end
 
 function FrameRenderer()
     SetCursorPos(2, 1)
-    println('Консоль')
+    Writeln('Консоль')
     for i = 1, ScrW() do
-        print('_')
+        Write('_')
     end
 
     SetCursorPos(1, 4)
     for _,v in ipairs(line) do
-        print(v)
+        Write(v)
     end
 
     for line, charTable in ipairs(linesStory) do
         SetCursorPos(1, 5 + line)
         if (line + 6 >= ScrH()) then return end
         for _,v in ipairs(charTable) do
-            print(v)
+            Write(v)
         end
     end
 end

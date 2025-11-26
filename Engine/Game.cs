@@ -92,20 +92,6 @@ namespace Terminal_Warrior.Engine
                         State.SetDebugChar(Convert.ToChar(symbol));
                     })
                 },
-                {   // Эти функции используются в GameState внутри Lua окружения
-                    // Обычный костыль, пишите просто Write() & Writeln()
-                    "_Write", (Action<LuaTable>)(args => {
-                        foreach (var item in args.Values)
-                            Console.Write(item);
-                    })
-                },
-                {
-                    "_Writeln", (Action<LuaTable>)(args => {
-                        foreach (var item in args.Values)
-                            Console.Write(item);
-                        Console.WriteLine();
-                    })
-                },
                 {
                     "SetCursorPos", (Action<int, int>)((left, top) => { try { Console.SetCursorPosition(left, top); } catch { } })
                 },
@@ -116,7 +102,7 @@ namespace Terminal_Warrior.Engine
                     "CurT", (Func<int>)(() => { return Console.GetCursorPosition().Top; })
                 },
                 {
-                    "SetScene", (Action<string>)(sceneName => { State.SetScene(sceneName); })
+                    "SetScene", (Action<string>)((sceneName) => { State.SetScene(sceneName); })
                 },
                 {
                     "_ShutDownGame", (Action)(() =>  { State.ShutDownGame(); })

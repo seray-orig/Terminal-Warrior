@@ -15,30 +15,12 @@ namespace Terminal_Warrior.Engine
         {
             _G.State.Encoding = Encoding.UTF8;
 
-            // Передать из Lua в C# множество аргументов можно только как LuaTable. object[] вызывает ошибку
-            // было бы славно реализовать Write & Writeln с приёмом множества аргументов
-            // так вот это костыль
+            // Write & Writeln вызывали утечку памяти по неизвестной причине
+            // решено реализовать их так - средствами Lua
             _G.DoString("""
 
-                println = print
-                function print(...)
-                    io.write(...)
-                end
-
-                function Write(...)
-                    local content = {}
-                    for _, value in ipairs({...}) do
-                        table.insert(content, value)
-                    end
-                    _Write(content)
-                end
-                function Writeln(...)
-                    local content = {}
-                    for _, value in ipairs({...}) do
-                        table.insert(content, value)
-                    end
-                    _Writeln(content)
-                end
+                Writeln = print
+                Write = io.write
 
              """);
         }
