@@ -3,11 +3,16 @@ linesStory = linesStory or {}
 
 function InputHandler()
     if (_readKey == 'Enter') then
+        local command = {}
+        for word in string.gmatch(table.concat(line), "%a+") do
+            table.insert(command, word)
+        end
         table.insert(linesStory, 1, line)
         if (#linesStory > 7) then
             for i = 8, #linesStory do linesStory[i] = nil end
         end
         line = {}
+        cmdFunc(command)
     elseif (_readKey == 'Backspace') then
         table.remove(line, #line)
     else
@@ -34,4 +39,13 @@ function FrameRenderer()
             Write(v)
         end
     end
+end
+
+function cmdFunc(command)
+    local commandList = {}
+    commandList.setscene = function(arg)
+        SetScene(arg)
+    end
+
+    commandList[command[1]](command[2])
 end

@@ -89,7 +89,8 @@ namespace Terminal_Warrior.Engine
         public StringBuilder _currentScene = new StringBuilder("MainMenuTest");
         public string CurrentScene { get { return _currentScene.ToString(); } }
         public void SetScene(string scene) { _currentScene.Clear(); _currentScene.Append(scene); }
-        public Dictionary<string, (string, string)> Scenes { get; private set; } = new Dictionary<string, (string, string)>() // Имя сцены = Lua код
+        // Имя сцены = Lua код
+        public Dictionary<string, (string, string)> Scenes { get; private set; } = new Dictionary<string, (string, string)>()
         {
             {   // Эти сцены зашиты в игру
                 "MainMenu", (
