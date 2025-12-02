@@ -10,19 +10,12 @@ namespace Terminal_Warrior.Engine
         //
         //  Движок \ Свойства
         //
-        public Lua _G { get; private set; } = new Lua();
+        public Lua _G { get; } = new Lua();
         public void Initialize_G()
         {
             _G.State.Encoding = Encoding.UTF8;
 
-            // Write & Writeln вызывали утечку памяти по неизвестной причине
-            // решено реализовать их так - средствами Lua
-            _G.DoString("""
-
-                Writeln = print
-                Write = io.write
-
-             """);
+            
         }
         private string configPath { get; } = "cfg/config.lua";
         public void LoadConfig()
@@ -75,49 +68,11 @@ namespace Terminal_Warrior.Engine
             ScreenSymbolsMax.Clear();
             ScreenSymbolsMax.Append(DebugChar, Width * Height);
         }
-        public static FileLogger ErrorLogger = new FileLogger("logs/errors.txt", new FileSystemService(), new MessageValidator());
 
         //
         //  Рендер
         //
         public char DebugChar { get; private set; } = ' ';
         public void SetDebugChar(char symbol) { DebugChar = symbol; }
-
-        //
-        //  Сцены
-        //
-        public StringBuilder _currentScene = new StringBuilder("MainMenuTest");
-        public string CurrentScene { get { return _currentScene.ToString(); } }
-        public void SetScene(string scene) { _currentScene.Clear(); _currentScene.Append(scene); }
-        // Имя сцены = Lua код
-        public Dictionary<string, (string, string)> Scenes { get; private set; } = new Dictionary<string, (string, string)>()
-        {
-            {   // Эти сцены зашиты в игру
-                "MainMenu", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-            {
-                "Gameplay", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-            {
-                "cmd", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-        };
-        public void AddScene(string Name, string LuaCode)
-        {
-            if (!Scenes.ContainsKey(Name)) Scenes.Add(Name, ("File", LuaCode));
-        }
-        public void RemoveScene(string Name)
-        {
-            Scenes.Remove(Name);
-        }
     }
 }

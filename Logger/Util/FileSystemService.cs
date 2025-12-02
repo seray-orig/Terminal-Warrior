@@ -1,6 +1,6 @@
-﻿
+﻿using Terminal_Warrior.Engine.Core;
 
-namespace Terminal_Warrior.Logger
+namespace Terminal_Warrior.Logger.Util
 {
     public class FileSystemService : IFileService
     {

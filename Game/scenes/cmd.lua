@@ -1,7 +1,7 @@
 line = line or {}
 linesStory = linesStory or {}
 
-function InputHandler()
+function InputHandler(_readKey, _readChar)
     if (_readKey == 'Enter') then
         local command = {}
         for word in string.gmatch(table.concat(line), "%a+") do

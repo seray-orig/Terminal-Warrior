@@ -1,4 +1,7 @@
 ﻿using Terminal_Warrior.Engine;
+using Terminal_Warrior.Engine.Core;
 
-var Game = new Game();
+IFactory<IGame> Factory = new GameFactory();
+IGame Game = Factory.Create();
+
 Game.Run();

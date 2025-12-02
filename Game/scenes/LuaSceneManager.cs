@@ -1,30 +1,40 @@
 ﻿using NLua;
+using System.Reflection;
 using System.Text;
 using Terminal_Warrior.Engine;
+using Terminal_Warrior.Engine.Core;
 
 namespace Terminal_Warrior.Game.scenes
 {
     public class LuaSceneManager : IDisposable
     {
         private Lua _lua;
-        private readonly StringBuilder _lastException = new StringBuilder();
-
-        public LuaSceneManager(Lua _G)
+        private GameState _state;
+        private ILogger _logger;
+        public LuaSceneManager(GameState state, ILogger logger)
         {
-            _lua = _G;
+            _lua = state._G;
+            _state = state;
+            _logger = logger;
         }
 
-        public void AddLuaFunctions(Dictionary<string, object> actions)
+        private StringBuilder _currentScene = new StringBuilder("MainMenuTest");
+        public string CurrentScene { get { return _currentScene.ToString(); } }
+        public void SetScene(string scene) { _currentScene.Clear(); _currentScene.Append(scene); }
+        public void AddScene(string Name, string LuaCode)
         {
-            foreach (var (key, value) in actions)
-                _lua[key] = value;
+            if (!Scenes.ContainsKey(Name)) Scenes.Add(Name, ("File", LuaCode));
+        }
+        public void RemoveScene(string Name)
+        {
+            Scenes.Remove(Name);
         }
 
-        public void RunLua(Dictionary<string, (string, string)> scenes, string sceneName, string functionName)
+        public void CallFunc(string functionName, params object[] args)
         {
-            if (!scenes.TryGetValue(sceneName, out var sceneData))
+            if (!Scenes.TryGetValue(CurrentScene, out var sceneData))
             {
-                LuaError(sceneName, functionName, new Exception("Сцена Lua не найдена."));
+                _logger.Log($"{CurrentScene} Сцена Lua не найдена.");
                 return;
             }
             (string Mode, string luaCode) = sceneData;
@@ -32,51 +42,45 @@ namespace Terminal_Warrior.Game.scenes
             if (Mode == "Internal")
             {
                 try { _lua.DoString(luaCode); }
-                catch (Exception ex) { LuaError(sceneName, functionName, ex); }
+                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
             }
-            else
+            else if (Mode == "File")
             {
                 try { _lua.DoFile(luaCode); }
-                catch (Exception ex) { LuaError(sceneName, functionName, ex); return; }
+                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
             }
+            else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
 
-            var func = _lua.GetFunction(functionName);
-            if (func == null)
-            {
-                LuaError(sceneName, functionName, new Exception("Функция Lua не найдена"));
-                return;
-            }
-
-            try { func?.Call(); }
-            catch (Exception ex)
-            {
-                LuaError(sceneName, functionName, ex);
-            }
+            try { _lua.GetFunction(functionName)?.Call(args); }
+            catch (Exception ex) { _logger.Log($"При вызове {functionName}(): {ex.Message}"); }
 
             _lua[functionName] = null;
         }
-        private void LuaError(string Name, string Function, Exception exception)
+
+        //
+        //  Сцены
+        //
+        public Dictionary<string, (string, string)> Scenes { get; set; } = new Dictionary<string, (string, string)>()
         {
-            try { Console.SetCursorPosition(1, 1); }
-            finally {
-                Console.BackgroundColor = ConsoleColor.Yellow;
-                Console.ForegroundColor = ConsoleColor.DarkYellow;
-                Console.Write("/!\\");
-                Console.BackgroundColor = ConsoleColor.White;
-                Console.ForegroundColor = ConsoleColor.DarkGray;
-                Console.Write(" Что-то создаёт скриптовые ошибки.");
-                Console.ResetColor();
-                Console.WriteLine();
-                Console.Write(exception.Message);
-            }
-
-            if (_lastException.ToString() == exception.ToString()) return;
-            string text = $"LuaSceneManager {Name}.lua {Function}(): {exception.Message}";
-            GameState.ErrorLogger.Log(text);
-
-            _lastException.Clear();
-            _lastException.Append(exception.ToString());
-        }
+            {   // Эти сцены зашиты в игру
+                "MainMenu", (
+                "Internal",
+                new StreamReader(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
+            },
+            {
+                "Gameplay", (
+                "Internal",
+                new StreamReader(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
+            },
+            {
+                "cmd", (
+                "Internal",
+                new StreamReader(Assembly.GetExecutingAssembly()
+                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
+            },
+        };
 
         public void Dispose()
         {

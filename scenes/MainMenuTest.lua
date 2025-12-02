@@ -6,7 +6,7 @@ Text = Text or { 1, {
     "Выход"
 }}
 
-function InputHandler()
+function InputHandler(_readKey, _readChar)
     if (_readKey == 'DownArrow') then
         Text[1] = math.min(Text[1] + 1, #Text[2])
     elseif (_readKey == 'UpArrow') then

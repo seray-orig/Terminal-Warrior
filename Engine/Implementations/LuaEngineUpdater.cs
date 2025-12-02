@@ -1,15 +1,11 @@
-﻿
+﻿using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.Game.scenes;
 
-namespace Terminal_Warrior.Engine.Core
+namespace Terminal_Warrior.Engine.Implementations
 {
-    public class StandartUpdater : EngineUpdater
+    public class LuaEngineUpdater : EngineUpdater
     {
-        private readonly LuaSceneManager _luaScenes;
-        public StandartUpdater(GameState state, LuaSceneManager luaScenes) : base(state)
-        {
-            _luaScenes = luaScenes;
-        }
+        public LuaEngineUpdater(GameContext gameContext) : base(gameContext) { }
 
         public override void Update()
         {
@@ -18,10 +14,10 @@ namespace Terminal_Warrior.Engine.Core
             _state.LoadConfig();
 
             // Очистка предыдущих сцен
-            foreach (var Scene in _state.Scenes)
+            foreach (var Scene in _sceneManager.Scenes)
             {
                 (string Mode, string LuaCode) = Scene.Value;
-                if (Mode == "File") _state.RemoveScene(Scene.Key);
+                if (Mode == "File") _sceneManager.RemoveScene(Scene.Key);
             }
 
             // Сперва монтируются скрипты внутренних папок
@@ -54,7 +50,7 @@ namespace Terminal_Warrior.Engine.Core
             foreach (string filePath in FileList)
             {
                 var Scene = Path.GetFileName(filePath);
-                _state.AddScene(Scene.Substring(0, Scene.Length - 4), filePath);
+                _sceneManager.AddScene(Scene.Substring(0, Scene.Length - 4), filePath);
             }
         }
     }
