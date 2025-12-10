@@ -11,9 +11,6 @@ namespace Terminal_Warrior.Engine.Implementations
         {
             // Обновление полей характеристик
             _state.UpdateScreenSize(Console.WindowWidth, Console.WindowHeight);
-
-            // Сперва монтируются скрипты внутренних папок
-            MountDirectory("Game/scenes");
         }
 
         /// <summary>

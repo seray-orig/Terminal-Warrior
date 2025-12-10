@@ -8,64 +8,19 @@ namespace Terminal_Warrior.game.scenes
 {
     public class LuaSceneManager
     {
-        private Lua _lua;
         private GameState _state;
         private ILogger _logger;
         public LuaSceneManager(GameState state, ILogger logger)
         {
-            _lua = state._G;
             _state = state;
             _logger = logger;
         }
 
         private StringBuilder _currentScene = new StringBuilder("MainMenuTest");
         public string CurrentScene { get { return _currentScene.ToString(); } }
-        public void SetScene(string scene) { _currentScene.Clear(); _currentScene.Append(scene); }
-        public void AddScene(string Name, string LuaCode)
-        {
-            if (!Scenes.ContainsKey(Name)) Scenes.Add(Name, ("File", LuaCode));
-        }
-        public void RemoveScene(string Name)
-        {
-            Scenes.Remove(Name);
-        }
-
-        public void CallFunc(string functionName, params object[] args)
-        {
-            if (!Scenes.TryGetValue(CurrentScene, out var sceneData))
-            {
-                _logger.Log($"{CurrentScene} Сцена Lua не найдена.");
-                return;
-            }
-            (string Mode, string luaCode) = sceneData;
-
-            if (Mode == "Internal")
-            {
-                try { _lua.DoString(luaCode); }
-                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
-            }
-            else if (Mode == "File")
-            {
-                try { _lua.DoFile(luaCode); }
-                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
-            }
-            else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
-            
-            try { _lua.GetFunction(functionName)?.Call(args); }
-            catch (Exception ex) { _logger.Log($"При вызове {functionName}(): {ex.Message}"); }
-
-            _lua[functionName] = null;
-        }
-
-        public void UpdateLua(Lua _G)
-        {
-            _lua = _G;
-        }
-
-        //
-        //  Сцены
-        //
-        public Dictionary<string, (string, string)> Scenes { get; set; } = new Dictionary<string, (string, string)>()
+        private StringBuilder _previousScene = new();
+        public string PreviousScene {get { return _previousScene.ToString(); } }
+        private Dictionary<string, (string, string)> _scenes = new Dictionary<string, (string, string)>()
         {
             {   // Эти сцены зашиты в игру
                 "MainMenu", (
@@ -86,5 +41,46 @@ namespace Terminal_Warrior.game.scenes
                 .GetManifestResourceStream("Terminal_Warrior.game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
             },
         };
+        public Dictionary<string, (string, string)> Scenes { get { return _scenes; } }
+        public void SetScene(string scene)
+        {
+            _previousScene.Clear(); _previousScene.Append(_currentScene);
+            _currentScene.Clear(); _currentScene.Append(scene);
+        }
+        public void AddScene(string Name, string LuaCode)
+        {
+            if (!_scenes.ContainsKey(Name)) _scenes.Add(Name, ("File", LuaCode));
+        }
+        public void RemoveScene(string Name)
+        {
+            _scenes.Remove(Name);
+        }
+
+        public void CallFunc(string functionName, params object[] args)
+        {
+            if (!_scenes.TryGetValue(CurrentScene, out var sceneData))
+            {
+                _logger.Log($"{CurrentScene} Сцена Lua не найдена.");
+                return;
+            }
+            (string Mode, string luaCode) = sceneData;
+
+            if (Mode == "Internal")
+            {
+                try { _state._G.DoString(luaCode); }
+                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
+            }
+            else if (Mode == "File")
+            {
+                try { _state._G.DoFile(luaCode); }
+                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
+            }
+            else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
+            
+            try { _state._G.GetFunction(functionName)?.Call(args); }
+            catch (Exception ex) { _logger.Log($"При вызове {functionName}(): {ex.Message}"); }
+
+            _state._G[functionName] = null;
+        }
     }
 }

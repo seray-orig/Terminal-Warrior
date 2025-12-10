@@ -53,8 +53,8 @@ namespace Terminal_Warrior.Engine
         private readonly GameState _state;
         private readonly ILogger _logger;
 
-        public InitializeLua _luaInit;
         public LuaSceneManager _sceneManager;
+        public InitializeLua _luaInit;
         public LuaScriptClinger _luaScriptClinger;
 
         public LuaContext(
@@ -74,8 +74,11 @@ namespace Terminal_Warrior.Engine
         {
             _state._G.Dispose();
             _state._G = new Lua();
-            _sceneManager.UpdateLua(_state._G);
+            _state.ConVarList.Clear();
+
             _luaInit = new(_state, _logger, _sceneManager);
+
+            _luaScriptClinger.FileSystemWatchersDispose();
             _luaScriptClinger = new(_state, _logger, _sceneManager);
         }
     }

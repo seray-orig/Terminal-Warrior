@@ -13,6 +13,9 @@ namespace Terminal_Warrior.game.lua
         private ILogger _logger;
         private LuaSceneManager _sceneManager;
 
+        private FileSystemWatcher _configWatcher;
+        private FileSystemWatcher _scenesWatcher;
+
         private List<string> _directories = new()
             { "game/scenes", "game/cfg", "game/lua", "logs", };
         private string _configPath { get; } = "game/cfg/config.lua";
@@ -50,12 +53,12 @@ namespace Terminal_Warrior.game.lua
                 }
             }
 
-            FileSystemWatcher config = new("game/cfg", "config.lua");
-            config.EnableRaisingEvents = true;
-            config.Created += new FileSystemEventHandler((sender, e) => DoConfig());
-            config.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
-            config.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
-            config.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
+            _configWatcher = new("game/cfg", "config.lua");
+            _configWatcher.EnableRaisingEvents = true;
+            _configWatcher.Created += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
 
             if (!File.Exists(_configPath))
             {
@@ -69,7 +72,22 @@ namespace Terminal_Warrior.game.lua
             //
             // Сцены
             //
+            void DoScene()
+            {
 
+            }
+
+            _scenesWatcher = new("game/scenes", "*.lua");
+            _configWatcher.EnableRaisingEvents = true;
+            _configWatcher.Created += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
+        }
+
+        public void FileSystemWatchersDispose()
+        {
+            _configWatcher.Dispose();
         }
     }
 }

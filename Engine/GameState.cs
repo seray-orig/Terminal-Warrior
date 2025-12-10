@@ -3,13 +3,12 @@ using System.Text;
 
 namespace Terminal_Warrior.Engine
 {
+    //
+    //  Движок \ Свойства
+    //
     public class GameState
     {
-        //
-        //  Движок \ Свойства
-        //
         public Lua _G = new();
-        public bool IsLuaReload = false;
         public Dictionary<string, ConVar> ConVarList = new();
         public bool IsRunning { get; private set; } = false;
         public void StartGame() { IsRunning = true; }
@@ -33,7 +32,7 @@ namespace Terminal_Warrior.Engine
         private object? _value;
         private (int, int) _limits;
 
-        public ConVar(LuaTable args)
+        public ConVar(LuaTable args)    // [1] - Имя, [2] - Значение, [3 - 4] - Пределы включительно (если значение - число)
         {
             if (args[4] != null)
                 _limits = (Convert.ToInt32(args[3]), Convert.ToInt32(args[4]));
@@ -49,6 +48,7 @@ namespace Terminal_Warrior.Engine
         {
             switch (args[2])
             {
+                // В Lua целое число - это тип Int64
                 case long:
                     int value = Convert.ToInt32(args[2]);
                     if (_limits != (0, 0))
@@ -56,6 +56,9 @@ namespace Terminal_Warrior.Engine
                         (var min, var max) = _limits;
                         if (max != 0)
                         {
+                            // Если число меньше минимума, очевидно нужно присвоить минимум
+                            // но, если есть лимит на максимум, то пусть будет максимум
+                            // мне кажется в этом есть смысл.
                             if (value < min || value > max)
                             { if (_value == null) _value = max; return; }
                         }
@@ -67,6 +70,13 @@ namespace Terminal_Warrior.Engine
                     }
                     _value = value;
                     break;
+                case string:
+                    string text = Convert.ToString(args[2])!;
+                    if (text.Length == 1)
+                        _value = Convert.ToChar(text);
+                    else 
+                        _value = text;
+                        break;
 
                 default:
                     _value = args[2];
@@ -74,17 +84,9 @@ namespace Terminal_Warrior.Engine
             }
         }
 
-        public object GetConVar()
+        public dynamic GetConVar()
         {
             return _value!;
-        }
-        public int GetInt()
-        {
-            return Convert.ToInt32(_value);
-        }
-        public char GetChar()
-        {
-            return Convert.ToChar(_value);
         }
     }
 }

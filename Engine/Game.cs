@@ -50,15 +50,9 @@ namespace Terminal_Warrior.Engine
                 _engineUpdater.Update();
                 _frameRenderer.Render();
 
-                if (_state.IsLuaReload)
-                {
-                    _luaContext.ReloadLua();
-                    _state.IsLuaReload = false;
-                }
-
                 // Подгон под фпс
                 int elapsed = (int)(DateTime.Now - frameStart).TotalMilliseconds;
-                int delay = Math.Max(0, (1000 / _convar["fps_target"].GetInt()) - elapsed);
+                int delay = Math.Max(0, (1000 / _convar["fps_target"].GetConVar()) - elapsed);
                 Thread.Sleep(delay);
             }
         }

@@ -1,5 +1,4 @@
-﻿using KeraLua;
-using NLua;
+﻿using NLua;
 using System.Text;
 using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.game.scenes;
@@ -10,11 +9,7 @@ namespace Terminal_Warrior.Engine.Implementations
     {
         private StringBuilder _readKey = new StringBuilder();
         private StringBuilder _readChar = new StringBuilder();
-        private StringBuilder _lastScene;
-        public InputLuaHandler(GameContext gameContext) : base(gameContext)
-        {
-            _lastScene = new StringBuilder(_sceneManager.CurrentScene);
-        }
+        public InputLuaHandler(GameContext gameContext) : base(gameContext) { }
         public override void Handle()
         {
             while (Console.KeyAvailable)
@@ -26,14 +21,14 @@ namespace Terminal_Warrior.Engine.Implementations
                 // Перехват нажатия ~ на открытие консоли на любой сцене
                 if (_readChar.ToString() == "~" && _sceneManager.CurrentScene != "cmd")
                 {
-                    _lastScene.Clear(); _lastScene.Append(_sceneManager.CurrentScene);
                     _sceneManager.SetScene("cmd");
                 }
                 else if (_readChar.ToString() == "~" && _sceneManager.CurrentScene == "cmd")
                 {
-                    _sceneManager.SetScene(_lastScene.ToString());
+                    _sceneManager.SetScene(_sceneManager.PreviousScene);
                 }
-                else if (_readChar.ToString() == "Ъ")
+                // Перехват нажатия на перезагрузку Lua
+                else if (_readChar.ToString() == "}")
                 {
                     _luaContext.ReloadLua();
                 }

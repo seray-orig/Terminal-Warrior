@@ -11,7 +11,7 @@ namespace Terminal_Warrior.Engine.Implementations
         
         public override void Render()
         {
-            var DebugChar = _convar["DebugChar"].GetChar();
+            char DebugChar = _convar["DebugChar"].GetConVar();
 
             // Очистка консоли перед отрисовкой нового кадра
             try { Console.SetCursorPosition(0, 0); }
