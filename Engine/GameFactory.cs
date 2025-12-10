@@ -1,4 +1,5 @@
-﻿using Terminal_Warrior.Engine.Core;
+﻿using NLua;
+using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.Engine.Implementations;
 using Terminal_Warrior.game.lua;
 using Terminal_Warrior.game.scenes;
@@ -13,12 +14,10 @@ namespace Terminal_Warrior.Engine
             GameState state = new();
             IFactory<ILogger> loggerFactory = new LoggerFactory();
             ILogger logger = loggerFactory.Create();
-            LuaSceneManager sceneManager = new(state, logger);
 
-            var luaContext = new LuaContext();
+            var luaContext = new LuaContext(state, logger);
             var gameContext = new GameContext(state, logger, luaContext);
-            InitializeLua luaInit = new(gameContext);
-            LuaScriptClinger scriptClinger = new(gameContext);
+
             InputHandler inputHandler = new InputLuaHandler(gameContext);
             EngineUpdater engineUpdater = new EngineLuaUpdater(gameContext);
             FrameRenderer frameRenderer = new FrameLuaRenderer(gameContext);
@@ -51,19 +50,33 @@ namespace Terminal_Warrior.Engine
 
     public class LuaContext
     {
+        private readonly GameState _state;
+        private readonly ILogger _logger;
+
         public InitializeLua _luaInit;
         public LuaSceneManager _sceneManager;
         public LuaScriptClinger _luaScriptClinger;
 
         public LuaContext(
-            InitializeLua luaInit,
-            LuaSceneManager sceneManager,
-            LuaScriptClinger luaScriptClinger
+            GameState state,
+            ILogger logger
         )
         {
-            _luaInit = luaInit;
-            _sceneManager = sceneManager;
-            _luaScriptClinger = luaScriptClinger;
+            _state = state;
+            _logger = logger;
+
+            _sceneManager = new(state, logger);
+            _luaInit = new(state, logger, _sceneManager);
+            _luaScriptClinger = new(state, logger, _sceneManager);
+        }
+
+        public void ReloadLua()
+        {
+            _state._G.Dispose();
+            _state._G = new Lua();
+            _sceneManager.UpdateLua(_state._G);
+            _luaInit = new(_state, _logger, _sceneManager);
+            _luaScriptClinger = new(_state, _logger, _sceneManager);
         }
     }
 }

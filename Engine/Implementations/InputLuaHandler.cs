@@ -33,6 +33,10 @@ namespace Terminal_Warrior.Engine.Implementations
                 {
                     _sceneManager.SetScene(_lastScene.ToString());
                 }
+                else if (_readChar.ToString() == "Ъ")
+                {
+                    _luaContext.ReloadLua();
+                }
 
                 _sceneManager.CallFunc("InputHandler", _readKey.ToString(), _readChar.ToString());
             }

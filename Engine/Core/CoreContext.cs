@@ -8,6 +8,7 @@ namespace Terminal_Warrior.Engine.Core
     {
         protected readonly GameState _state;
         protected readonly Dictionary<string, ConVar> _convar;
+        protected readonly LuaContext _luaContext;
         protected readonly ILogger _logger;
         protected readonly LuaSceneManager _sceneManager;
 
@@ -15,8 +16,9 @@ namespace Terminal_Warrior.Engine.Core
         {
             _state = gameContext._state;
             _convar = _state.ConVarList;
+            _luaContext = gameContext._luaContext;
             _logger = gameContext._logger;
-            _sceneManager = gameContext._sceneManager;
+            _sceneManager = gameContext._luaContext._sceneManager;
         }
     }
 }

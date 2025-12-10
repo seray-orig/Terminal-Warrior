@@ -8,7 +8,8 @@ namespace Terminal_Warrior.Engine
         //
         //  Движок \ Свойства
         //
-        public Lua _G { get; set; } = new();
+        public Lua _G = new();
+        public bool IsLuaReload = false;
         public Dictionary<string, ConVar> ConVarList = new();
         public bool IsRunning { get; private set; } = false;
         public void StartGame() { IsRunning = true; }

@@ -2,22 +2,27 @@
 using System.Text;
 using Terminal_Warrior.Engine;
 using Terminal_Warrior.Engine.Core;
+using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
 {
     /// <summary>
     /// Здесь создаются C# API функции для окружения Lua.
     /// </summary>
-    public class InitializeLua : CoreContext
+    public class InitializeLua
     {
-        public InitializeLua(GameContext gameContext) : base(gameContext)
+        private GameState _state;
+        private Dictionary<string, ConVar> _convar;
+        private ILogger _logger;
+        private LuaSceneManager _sceneManager;
+        public InitializeLua(GameState state, ILogger logger, LuaSceneManager sceneManager)
         {
-            InitLua(_state._G);
-        }
+            _state = state;
+            _convar = _state.ConVarList;
+            _logger = logger;
+            _sceneManager = sceneManager;
 
-        private void InitLua(Lua G)
-        {
-            G.State.Encoding = Encoding.UTF8;
+            _state._G.State.Encoding = Encoding.UTF8;
 
             //
             //  Создание API функций - мост между игрой и Lua скриптами
@@ -73,12 +78,12 @@ namespace Terminal_Warrior.game.lua
                 },*/
             };
             foreach (var (luaFunc, csFunc) in CStoLua)
-                G[luaFunc] = csFunc;
+                _state._G[luaFunc] = csFunc;
 
             //
             // Создание функций методами самой Lua или костыляция API функций выше
             //
-            G.DoString("""
+            _state._G.DoString("""
 
                 Writeln = print
                 Write = io.write

@@ -2,17 +2,28 @@
 using System.Text;
 using Terminal_Warrior.Engine;
 using Terminal_Warrior.Engine.Core;
+using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
 {
-    public class LuaScriptClinger : CoreContext
+    public class LuaScriptClinger
     {
+        private GameState _state;
+        private Dictionary<string, ConVar> _convar;
+        private ILogger _logger;
+        private LuaSceneManager _sceneManager;
+
         private List<string> _directories = new()
             { "game/scenes", "game/cfg", "game/lua", "logs", };
         private string _configPath { get; } = "game/cfg/config.lua";
 
-        public LuaScriptClinger(GameContext gameContext) : base(gameContext)
+        public LuaScriptClinger(GameState state, ILogger logger, LuaSceneManager sceneManager)
         {
+            _state = state;
+            _convar = _state.ConVarList;
+            _logger = logger;
+            _sceneManager = sceneManager;
+
             //
             // Директории которые необходимы для игры
             //

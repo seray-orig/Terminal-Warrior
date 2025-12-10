@@ -57,6 +57,11 @@ namespace Terminal_Warrior.game.scenes
             _lua[functionName] = null;
         }
 
+        public void UpdateLua(Lua _G)
+        {
+            _lua = _G;
+        }
+
         //
         //  Сцены
         //
