@@ -1,4 +1,4 @@
-﻿using Terminal_Warrior.Engine.Core;
+﻿using NLua;
 
 namespace Terminal_Warrior.Logger
 {
@@ -27,10 +27,33 @@ namespace Terminal_Warrior.Logger
                 Console.Write(" Что-то создаёт скриптовые ошибки.");
                 Console.ResetColor();
                 Console.WriteLine();
-                foreach (var item in message) Console.Write(item);
+                void Perebor(object obj)
+                {
+                    switch (obj)
+                    {
+                        case LuaTable:
+                            LuaTable content = (LuaTable)obj;
+                            foreach (var item in content.Values)
+                                Perebor(item);
+                            break;
+                        case System.Collections.IEnumerable:
+                            dynamic content2 = obj;
+                            foreach (var item in content2)
+                                Perebor(item);
+                            break;
+                        default:
+                            Console.Write(obj);
+                            break;
+                    }
+                }
+                foreach (var item in message)
+                {
+                    Perebor(item);
+                }
             }
 
             return true;
         }
+
     }
 }

@@ -2,16 +2,16 @@
 using NLua;
 using System.Text;
 using Terminal_Warrior.Engine.Core;
-using Terminal_Warrior.Game.scenes;
+using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.Engine.Implementations
 {
-    public class LuaInputHandler : InputHandler
+    public class InputLuaHandler : InputHandler
     {
         private StringBuilder _readKey = new StringBuilder();
         private StringBuilder _readChar = new StringBuilder();
         private StringBuilder _lastScene;
-        public LuaInputHandler(GameContext gameContext) : base(gameContext)
+        public InputLuaHandler(GameContext gameContext) : base(gameContext)
         {
             _lastScene = new StringBuilder(_sceneManager.CurrentScene);
         }

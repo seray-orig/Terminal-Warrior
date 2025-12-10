@@ -4,9 +4,9 @@ using System.Text;
 using Terminal_Warrior.Engine;
 using Terminal_Warrior.Engine.Core;
 
-namespace Terminal_Warrior.Game.scenes
+namespace Terminal_Warrior.game.scenes
 {
-    public class LuaSceneManager : IDisposable
+    public class LuaSceneManager
     {
         private Lua _lua;
         private GameState _state;
@@ -50,7 +50,7 @@ namespace Terminal_Warrior.Game.scenes
                 catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
             }
             else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
-
+            
             try { _lua.GetFunction(functionName)?.Call(args); }
             catch (Exception ex) { _logger.Log($"При вызове {functionName}(): {ex.Message}"); }
 
@@ -66,25 +66,20 @@ namespace Terminal_Warrior.Game.scenes
                 "MainMenu", (
                 "Internal",
                 new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
+                .GetManifestResourceStream("Terminal_Warrior.game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
             },
             {
                 "Gameplay", (
                 "Internal",
                 new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
+                .GetManifestResourceStream("Terminal_Warrior.game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
             },
             {
                 "cmd", (
                 "Internal",
                 new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.Game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
+                .GetManifestResourceStream("Terminal_Warrior.game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
             },
         };
-
-        public void Dispose()
-        {
-            _lua.Dispose();
-        }
     }
 }

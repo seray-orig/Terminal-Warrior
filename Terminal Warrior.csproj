@@ -9,31 +9,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Game\cfg\config.lua" />
-    <None Remove="Game\scenes\cmd.lua" />
-    <None Remove="Game\scenes\Gameplay.lua" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="NLua" Version="1.7.6" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Game\cfg\config.lua">
+    <EmbeddedResource Include="game\cfg\config.lua">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
-    <EmbeddedResource Include="Game\scenes\cmd.lua" />
-    <EmbeddedResource Include="Game\scenes\Gameplay.lua" />
-    <EmbeddedResource Include="Game\scenes\MainMenu.lua" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="scenes\MainMenuTest.lua">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
-    <None Update="scenes\MainSceneTest.lua">
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </None>
+    <EmbeddedResource Include="game\scenes\cmd.lua" />
+    <EmbeddedResource Include="game\scenes\Gameplay.lua" />
+    <EmbeddedResource Include="game\scenes\MainMenu.lua" />
   </ItemGroup>
 
 </Project>

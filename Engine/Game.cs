@@ -1,8 +1,5 @@
-﻿using NLua;
-using System.Text;
+﻿using System.Text;
 using Terminal_Warrior.Engine.Core;
-using Terminal_Warrior.Engine.Implementations;
-using Terminal_Warrior.Game.scenes;
 
 namespace Terminal_Warrior.Engine
 {
@@ -36,20 +33,7 @@ namespace Terminal_Warrior.Engine
             Console.Title = "Terminal Warrior";
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
-            _state.Initialize_G();
 
-            ///<summary>
-            /// Директории которые создаются при запуске. Необходимы для игры
-            /// </summary>
-            var Directories = new List<string>()
-            { "logs", "scenes", "cfg", "addons", "lua", };
-            foreach (string Name in Directories)
-            {
-                if (!Directory.Exists(Name))
-                    Directory.CreateDirectory(Name);
-            }
-
-            _state.LoadConfig();
             _state.StartGame();
         }
 
@@ -68,7 +52,7 @@ namespace Terminal_Warrior.Engine
 
                 // Подгон под фпс
                 int elapsed = (int)(DateTime.Now - frameStart).TotalMilliseconds;
-                int delay = Math.Max(0, (1000 / Math.Max(1, Convert.ToInt32(_state._G["fps_target"]))) - elapsed);
+                int delay = Math.Max(0, (1000 / _convar["fps_target"].GetInt()) - elapsed);
                 Thread.Sleep(delay);
             }
         }

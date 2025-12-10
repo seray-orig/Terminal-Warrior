@@ -12,7 +12,7 @@ function InputHandler(_readKey, _readChar)
             for i = 8, #linesStory do linesStory[i] = nil end
         end
         line = {}
-        cmdFunc(command)
+        CallCommand(command)
     elseif (_readKey == 'Backspace') then
         table.remove(line, #line)
     else
@@ -41,11 +41,14 @@ function FrameRenderer()
     end
 end
 
-function cmdFunc(command)
-    local commandList = {}
-    commandList.setscene = function(arg)
+function CallCommand(command)
+    local commands = {}
+    commands.setscene = function(arg)
         SetScene(arg)
     end
+    commands.doscript = function(arg)
+        DoScript(arg)
+    end
 
-    commandList[command[1]](command[2])
+    commands[command[1]](command[2])
 end

@@ -1,7 +1,5 @@
 ﻿using NLua;
-using System.Reflection;
 using System.Text;
-using Terminal_Warrior.Logger;
 
 namespace Terminal_Warrior.Engine
 {
@@ -10,69 +8,82 @@ namespace Terminal_Warrior.Engine
         //
         //  Движок \ Свойства
         //
-        public Lua _G { get; } = new Lua();
-        public void Initialize_G()
-        {
-            _G.State.Encoding = Encoding.UTF8;
-
-            
-        }
-        private string configPath { get; } = "cfg/config.lua";
-        public void LoadConfig()
-        {
-            if (!File.Exists(configPath))
-                CreateConfig();
-            try
-            {
-                _G.DoFile(configPath);
-            }
-            catch (Exception ex)
-            {
-                try { Console.SetCursorPosition(1, 1); }
-                finally
-                {
-                    Console.BackgroundColor = ConsoleColor.Yellow;
-                    Console.ForegroundColor = ConsoleColor.DarkYellow;
-                    Console.Write("/!\\");
-                    Console.BackgroundColor = ConsoleColor.White;
-                    Console.ForegroundColor = ConsoleColor.DarkGray;
-                    Console.Write(" Что-то создаёт скриптовые ошибки.");
-                    Console.ResetColor();
-                    Console.WriteLine();
-                    Console.WriteLine(ex.Message);
-                    Console.Write("используется стандартный файл конфигурации.");
-                    Thread.Sleep(10);
-                }
-
-                _G.DoString(new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.cfg.config.lua")!, Encoding.UTF8).ReadToEnd());
-            }
-        }
-        private void CreateConfig()
-        {
-            File.Create(configPath).Close();
-            File.WriteAllText(configPath, new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.cfg.config.lua")!, Encoding.UTF8).ReadToEnd());
-        }
-
+        public Lua _G { get; set; } = new();
+        public Dictionary<string, ConVar> ConVarList = new();
         public bool IsRunning { get; private set; } = false;
         public void StartGame() { IsRunning = true; }
         public void ShutDownGame() { IsRunning = false; }
 
         public int ScreenWidth { get; private set; }
         public int ScreenHeight { get; private set; }
-        public StringBuilder ScreenSymbolsMax { get; private set; } = new StringBuilder();
+        public int ScreenSymbolsMax { get; private set; }
         public void UpdateScreenSize(int Width, int Height)
         {
             ScreenWidth = Width; ScreenHeight = Height;
-            ScreenSymbolsMax.Clear();
-            ScreenSymbolsMax.Append(DebugChar, Width * Height);
+            ScreenSymbolsMax = Width * Height;
+        }
+    }
+
+    //
+    //  "Консольные переменные"
+    //
+    public class ConVar
+    {
+        private object? _value;
+        private (int, int) _limits;
+
+        public ConVar(LuaTable args)
+        {
+            if (args[4] != null)
+                _limits = (Convert.ToInt32(args[3]), Convert.ToInt32(args[4]));
+            else if (args[3] != null)
+                _limits = (Convert.ToInt32(args[3]), 0);
+            else
+                _limits = (0, 0);
+
+            SetConVar(args);
         }
 
-        //
-        //  Рендер
-        //
-        public char DebugChar { get; private set; } = ' ';
-        public void SetDebugChar(char symbol) { DebugChar = symbol; }
+        public void SetConVar(LuaTable args)
+        {
+            switch (args[2])
+            {
+                case long:
+                    int value = Convert.ToInt32(args[2]);
+                    if (_limits != (0, 0))
+                    {
+                        (var min, var max) = _limits;
+                        if (max != 0)
+                        {
+                            if (value < min || value > max)
+                            { if (_value == null) _value = max; return; }
+                        }
+                        else
+                        {
+                            if (value < min)
+                            { if (_value == null) _value = min; return; }
+                        }
+                    }
+                    _value = value;
+                    break;
+
+                default:
+                    _value = args[2];
+                    break;
+            }
+        }
+
+        public object GetConVar()
+        {
+            return _value!;
+        }
+        public int GetInt()
+        {
+            return Convert.ToInt32(_value);
+        }
+        public char GetChar()
+        {
+            return Convert.ToChar(_value);
+        }
     }
 }

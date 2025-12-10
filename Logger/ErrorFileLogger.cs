@@ -1,4 +1,4 @@
-﻿using Terminal_Warrior.Engine.Core;
+﻿using NLua;
 using System.Text;
 
 namespace Terminal_Warrior.Logger
@@ -20,14 +20,33 @@ namespace Terminal_Warrior.Logger
         {
             if (!_messageValidator.IsValid(message))
                 return false;
-            
+
             if (!_fileService.IsFileExist(_path))
                 _fileService.CreateFile(_path);
 
             var text = new StringBuilder();
+            void Perebor(object obj)
+            {
+                switch (obj)
+                {
+                    case LuaTable:
+                        LuaTable content = (LuaTable)obj;
+                        foreach (var item in content.Values)
+                            Perebor(item);
+                        break;
+                    case System.Collections.IEnumerable:
+                        dynamic content2 = obj;
+                        foreach (var item in content2)
+                            Perebor(item);
+                        break;
+                    default:
+                        text.Append(obj.ToString());
+                        break;
+                }
+            }
             foreach (var item in message)
             {
-                text.Append(item.ToString());
+                Perebor(item);
             }
 
             if (_lastError.ToString() == text.ToString()) return true;
