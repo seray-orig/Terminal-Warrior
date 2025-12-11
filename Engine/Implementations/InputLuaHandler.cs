@@ -30,7 +30,7 @@ namespace Terminal_Warrior.Engine.Implementations
                 // Перехват нажатия на перезагрузку Lua
                 else if (_readChar.ToString() == "}")
                 {
-                    _luaContext.ReloadLua();
+                    _luaContext.HotLuaReload();
                 }
 
                 _sceneManager.CallFunc("InputHandler", _readKey.ToString(), _readChar.ToString());

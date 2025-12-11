@@ -24,11 +24,16 @@ namespace Terminal_Warrior.Logger
             if (!_fileService.IsFileExist(_path))
                 _fileService.CreateFile(_path);
 
+            // Рекурсивное доставание итоговых объектов, если есть коллекции.
+            // Блок кода, которым я горжусь!
+            // Ни одна нейронка не могла выдать даже похожего результата,
+            // а я написал! (Основано на рекурсивной функции числа Фибоначчи)
             var text = new StringBuilder();
             void Perebor(object obj)
             {
                 switch (obj)
                 {
+                    // Не уверен, что LuaTable реализует IEnumerable
                     case LuaTable:
                         LuaTable content = (LuaTable)obj;
                         foreach (var item in content.Values)

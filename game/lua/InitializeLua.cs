@@ -1,4 +1,12 @@
-﻿using NLua;
+﻿/*
+ * LUA API BRIDGE INITIALIZATION
+ * 
+ * Инициализирует мост между C# и Lua окружением.
+ * Расширяет стандартное Lua поведение через переопределение и
+ * создание API функций, тем самым образуя возможность моддинга игры.
+ */
+
+using NLua;
 using System.Text;
 using Terminal_Warrior.Engine;
 using Terminal_Warrior.Engine.Core;
@@ -77,7 +85,7 @@ namespace Terminal_Warrior.game.lua
                         catch { _logger.Log($"Не удалось выполнить скрипт: {fileName}"); } })
                 },*/
             };
-            foreach (var (luaFunc, csFunc) in CStoLua)
+foreach (var (luaFunc, csFunc) in CStoLua)
                 _state._G[luaFunc] = csFunc;
 
             //

@@ -1,4 +1,14 @@
-﻿using NLua;
+﻿/*
+ * LUA SCENE MANAGEMENT SYSTEM
+ * 
+ * Менеджер сцен на основе Lua скриптов.
+ * Имеет публичные методы для работы со списком сцен и вызова функций
+ * 
+ * Сцены зашитие в игру помечены "Internal", их код загружается из embedded ресурсов.
+ * Кастомные из папки game/scenes "File", выполняются как файл.
+ */
+
+using NLua;
 using System.Reflection;
 using System.Text;
 using Terminal_Warrior.Engine;

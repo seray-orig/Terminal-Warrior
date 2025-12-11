@@ -1,4 +1,14 @@
-﻿using Terminal_Warrior.Engine.Core;
+﻿/*
+ * LOGGER FACTORY
+ * 
+ * Фабрика для создания системы логгирования.
+ * Отправляет список в конструктор класса LoggersList,
+ * который через обеспечивает последовательный вызов Log() каждого из них.
+ * 
+ * Для добавления логгера достаточно создать его в списке return.
+ */
+
+using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.Logger.Util;
 
 namespace Terminal_Warrior.Logger

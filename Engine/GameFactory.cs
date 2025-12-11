@@ -70,7 +70,7 @@ namespace Terminal_Warrior.Engine
             _luaScriptClinger = new(state, logger, _sceneManager);
         }
 
-        public void ReloadLua()
+        public void HotLuaReload()
         {
             _state._G.Dispose();
             _state._G = new Lua();

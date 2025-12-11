@@ -1,4 +1,14 @@
-﻿using System.Text;
+﻿/*
+ * GAME LOOP CORE
+ * 
+ * Основной класс игры, реализующий игровой цикл.
+ * Отвечает за:
+ * - Инициализацию консоли и состояния игры
+ * - Управление главным циклом (input-update-render)
+ * - Контроль FPS и синхронизацию кадров
+ */
+
+using System.Text;
 using Terminal_Warrior.Engine.Core;
 
 namespace Terminal_Warrior.Engine

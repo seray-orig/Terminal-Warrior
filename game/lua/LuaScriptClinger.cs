@@ -1,7 +1,17 @@
-﻿using System.IO;
+﻿/*
+ * LUA SCRIPT TRACKING SYSTEM
+ * 
+ * Система динамической загрузки и отслеживания Lua-скриптов.
+ * Обеспечивает:
+ * - Автоматическое отслеживание изменений скриптов через FileSystemWatcher
+ * - Создание необходимых директорий при инициализации
+ * 
+ * Реализован метод Dispose для освобождения неуправляемых ресурсов.
+ * Используется при горячей перезагрузки Lua окружения.
+ */
+
 using System.Reflection;
 using System.Text;
-using System.Xml.Linq;
 using Terminal_Warrior.Engine;
 using Terminal_Warrior.game.scenes;
 
