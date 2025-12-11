@@ -16,11 +16,11 @@ namespace Terminal_Warrior.game.scenes
             _logger = logger;
         }
 
-        private StringBuilder _currentScene = new StringBuilder("MainMenuTest");
+        private StringBuilder _currentScene = new("MainMenuTest");
         public string CurrentScene { get { return _currentScene.ToString(); } }
         private StringBuilder _previousScene = new();
         public string PreviousScene {get { return _previousScene.ToString(); } }
-        private Dictionary<string, (string, string)> _scenes = new Dictionary<string, (string, string)>()
+        private Dictionary<string, (string, string)> _scenes = new()
         {
             {   // Эти сцены зашиты в игру
                 "MainMenu", (
@@ -47,9 +47,9 @@ namespace Terminal_Warrior.game.scenes
             _previousScene.Clear(); _previousScene.Append(_currentScene);
             _currentScene.Clear(); _currentScene.Append(scene);
         }
-        public void AddScene(string Name, string LuaCode)
+        public void AddScene(string Name)
         {
-            if (!_scenes.ContainsKey(Name)) _scenes.Add(Name, ("File", LuaCode));
+            if (!_scenes.ContainsKey(Name)) _scenes.Add(Name, ("File", $"game/scenes/{Name}.lua"));
         }
         public void RemoveScene(string Name)
         {

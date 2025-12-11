@@ -78,7 +78,7 @@ namespace Terminal_Warrior.Engine
 
             _luaInit = new(_state, _logger, _sceneManager);
 
-            _luaScriptClinger.FileSystemWatchersDispose();
+            _luaScriptClinger.Dispose();
             _luaScriptClinger = new(_state, _logger, _sceneManager);
         }
     }

@@ -1,12 +1,13 @@
-﻿using System.Reflection;
+﻿using System.IO;
+using System.Reflection;
 using System.Text;
+using System.Xml.Linq;
 using Terminal_Warrior.Engine;
-using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
 {
-    public class LuaScriptClinger
+    public class LuaScriptClinger : IDisposable
     {
         private GameState _state;
         private Dictionary<string, ConVar> _convar;
@@ -72,22 +73,52 @@ namespace Terminal_Warrior.game.lua
             //
             // Сцены
             //
-            void DoScene()
-            {
-
-            }
-
             _scenesWatcher = new("game/scenes", "*.lua");
-            _configWatcher.EnableRaisingEvents = true;
-            _configWatcher.Created += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
+            _scenesWatcher.EnableRaisingEvents = true;
+            _scenesWatcher.Created += new FileSystemEventHandler((sender, e) =>
+            {
+                var Name = Path.GetFileNameWithoutExtension(e.FullPath);
+                if (!string.IsNullOrEmpty(Name))
+                    _sceneManager.AddScene(Name);
+            });
+            _scenesWatcher.Changed += new FileSystemEventHandler((sender, e) =>
+            {
+                var Name = Path.GetFileNameWithoutExtension(e.FullPath);
+                if (!string.IsNullOrEmpty(Name))
+                {
+                    _sceneManager.RemoveScene(Name);
+                    _sceneManager.AddScene(Name);
+                }
+            });
+            _scenesWatcher.Deleted += new FileSystemEventHandler((sender, e) =>
+            {
+                var Name = Path.GetFileNameWithoutExtension(e.FullPath);
+                if (!string.IsNullOrEmpty(Name))
+                    _sceneManager.RemoveScene(Name);
+            });
+            _scenesWatcher.Renamed += new RenamedEventHandler((sender, e) =>
+            {
+                var Name = Path.GetFileNameWithoutExtension(e.FullPath);
+                if (!string.IsNullOrEmpty(Name))
+                {
+                    if (Path.GetExtension(e.FullPath) == ".lua")
+                    {
+                        _sceneManager.RemoveScene(Name);
+                        _sceneManager.AddScene(Name);
+                    }
+                    else
+                        _sceneManager.RemoveScene(Name);
+                }
+            });
+
+            foreach (string filePath in Directory.GetFiles("game/scenes", "*.lua"))
+                _sceneManager.AddScene(Path.GetFileNameWithoutExtension(filePath));
         }
 
-        public void FileSystemWatchersDispose()
+        public void Dispose()
         {
             _configWatcher.Dispose();
+            _scenesWatcher.Dispose();
         }
     }
 }

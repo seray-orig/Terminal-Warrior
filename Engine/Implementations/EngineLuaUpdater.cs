@@ -12,18 +12,5 @@ namespace Terminal_Warrior.Engine.Implementations
             // Обновление полей характеристик
             _state.UpdateScreenSize(Console.WindowWidth, Console.WindowHeight);
         }
-
-        /// <summary>
-        /// Монтирование скриптов сцен из указанной папки
-        /// </summary>
-        private void MountDirectory(string path)
-        {
-            var FileList = Directory.GetFiles(path, "*.lua");
-            foreach (string filePath in FileList)
-            {
-                var Scene = Path.GetFileName(filePath);
-                _sceneManager.AddScene(Scene.Substring(0, Scene.Length - 4), filePath);
-            }
-        }
     }
 }
