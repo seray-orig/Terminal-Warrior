@@ -17,7 +17,6 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
     <EmbeddedResource Include="game\scenes\cmd.lua" />
-    <EmbeddedResource Include="game\scenes\Gameplay.lua" />
     <EmbeddedResource Include="game\scenes\MainMenu.lua" />
   </ItemGroup>
 

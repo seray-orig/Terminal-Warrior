@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Terminal_Warrior.Logger
 {
-    public class ErrorFileLogger : ILogger
+    public sealed class ErrorFileLogger : ILogger
     {
         private readonly string _path = "logs/errors.txt";
         private readonly StringBuilder _lastError = new StringBuilder();
@@ -38,6 +38,10 @@ namespace Terminal_Warrior.Logger
                         LuaTable content = (LuaTable)obj;
                         foreach (var item in content.Values)
                             Perebor(item);
+                        break;
+                    case string:
+                        // Удивительно, стринг - символьный массив и тоже реализует интерфейс
+                        text.Append(obj);
                         break;
                     case System.Collections.IEnumerable:
                         dynamic content2 = obj;

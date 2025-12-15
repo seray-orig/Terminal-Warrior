@@ -13,7 +13,7 @@ using Terminal_Warrior.Engine.Core;
 
 namespace Terminal_Warrior.Engine
 {
-    public class Game : CoreContext, IGame
+    public sealed class Game : CoreContext, IGame
     {
         private InputHandler _inputHandler;
         private EngineUpdater _engineUpdater;
@@ -53,7 +53,8 @@ namespace Terminal_Warrior.Engine
             {
                 var frameStart = DateTime.Now;
 
-                // Костыль на "фиксированное" значение видимости курсора
+                // Костыль: фиксируем видимость курсора каждый кадр
+                // изменение размера окна, клик или что-то ещё ставит CursorVisible на true
                 Console.CursorVisible = false;
 
                 _inputHandler.Handle();

@@ -8,6 +8,7 @@
  * Для добавления логгера достаточно создать его в списке return.
  */
 
+using Terminal_Warrior.Engine;
 using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.Logger.Util;
 

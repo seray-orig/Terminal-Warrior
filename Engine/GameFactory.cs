@@ -7,7 +7,7 @@ using Terminal_Warrior.Logger;
 
 namespace Terminal_Warrior.Engine
 {
-    public class GameFactory : IFactory<IGame>
+    public sealed class GameFactory : IFactory<IGame>
     {
         public IGame Create()
         {
@@ -31,7 +31,7 @@ namespace Terminal_Warrior.Engine
         }
     }
 
-    public class GameContext
+    public sealed class GameContext
     {
         public GameState _state;
         public ILogger _logger;
@@ -48,7 +48,7 @@ namespace Terminal_Warrior.Engine
         }
     }
 
-    public class LuaContext
+    public sealed class LuaContext
     {
         private readonly GameState _state;
         private readonly ILogger _logger;
@@ -70,6 +70,13 @@ namespace Terminal_Warrior.Engine
             _luaScriptClinger = new(state, logger, _sceneManager);
         }
 
+        /// <summary>
+        /// Пересоздаёт окружение Lua со всеми стартовыми параметрами.
+        /// Полезно, если Lua померло, например от "C stack overflow".
+        /// Не влияет на C# ядро игры, сохраняется текущая сцена.
+        /// Безопасно вызывать в любой точке кода
+        /// (наверное).
+        /// </summary>
         public void HotLuaReload()
         {
             _state._G.Dispose();

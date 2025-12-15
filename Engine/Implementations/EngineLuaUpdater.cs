@@ -3,7 +3,7 @@ using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.Engine.Implementations
 {
-    public class EngineLuaUpdater : EngineUpdater
+    public sealed class EngineLuaUpdater : EngineUpdater
     {
         public EngineLuaUpdater(GameContext gameContext) : base(gameContext) { }
 
@@ -11,6 +11,8 @@ namespace Terminal_Warrior.Engine.Implementations
         {
             // Обновление полей характеристик
             _state.UpdateScreenSize(Console.WindowWidth, Console.WindowHeight);
+
+            _sceneManager.CallFunc("EngineUpdater");
         }
     }
 }

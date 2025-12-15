@@ -39,12 +39,6 @@ namespace Terminal_Warrior.game.scenes
                 .GetManifestResourceStream("Terminal_Warrior.game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
             },
             {
-                "Gameplay", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.game.scenes.Gameplay.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-            {
                 "cmd", (
                 "Internal",
                 new StreamReader(Assembly.GetExecutingAssembly()
@@ -70,7 +64,7 @@ namespace Terminal_Warrior.game.scenes
         {
             if (!_scenes.TryGetValue(CurrentScene, out var sceneData))
             {
-                _logger.Log($"{CurrentScene} Сцена Lua не найдена.");
+                _logger.Log($"{CurrentScene}.lua Сцена Lua не найдена.");
                 return;
             }
             (string Mode, string luaCode) = sceneData;
@@ -88,7 +82,7 @@ namespace Terminal_Warrior.game.scenes
             else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
             
             try { _state._G.GetFunction(functionName)?.Call(args); }
-            catch (Exception ex) { _logger.Log($"При вызове {functionName}(): {ex.Message}"); }
+            catch (Exception ex) { _logger.Log($"Сцена {CurrentScene}.lua При вызове {functionName}(): {ex.Message}"); }
 
             _state._G[functionName] = null;
         }

@@ -1,11 +1,8 @@
 ﻿using Terminal_Warrior.Engine.Core;
-using Terminal_Warrior.game.scenes;
-using NLua;
-using Terminal_Warrior.Logger;
 
 namespace Terminal_Warrior.Engine.Implementations
 {
-    public class FrameLuaRenderer : FrameRenderer
+    public sealed class FrameLuaRenderer : FrameRenderer
     {
         public FrameLuaRenderer(GameContext gameContext) : base(gameContext) { }
         
@@ -19,6 +16,14 @@ namespace Terminal_Warrior.Engine.Implementations
             try { Console.SetCursorPosition(0, 0); } catch { }
 
             _sceneManager.CallFunc("FrameRenderer");
+
+            // Костыль. Общая точка рендера Write & WriteLine
+            // Читать подробнее в ConsoleExtended.cs
+            foreach (var list in ConsoleExtended.Actions.ToArray().OrderBy(m => m.Layer))
+            {
+                list.Action.Invoke();
+            }
+            ConsoleExtended.Actions.Clear();
         }
     }
 }

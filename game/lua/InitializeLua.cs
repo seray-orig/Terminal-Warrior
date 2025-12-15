@@ -9,20 +9,17 @@
 using NLua;
 using System.Text;
 using Terminal_Warrior.Engine;
-using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
 {
-    /// <summary>
-    /// Здесь создаются C# API функции для окружения Lua.
-    /// </summary>
     public class InitializeLua
     {
         private GameState _state;
         private Dictionary<string, ConVar> _convar;
         private ILogger _logger;
         private LuaSceneManager _sceneManager;
+        private List<string> _includes = new(); // Хранит список скриптов подключенных к среде
         public InitializeLua(GameState state, ILogger logger, LuaSceneManager sceneManager)
         {
             _state = state;
@@ -80,18 +77,68 @@ namespace Terminal_Warrior.game.lua
                 {
                     "Log", (Func<LuaTable, bool>)((message) => { return _logger.Log(message); })
                 },
-                /*{
-                    "DoScript", (Action<string>)((fileName) => { try { _state._G.DoFile($"Game/lua/{fileName}"); }
-                        catch { _logger.Log($"Не удалось выполнить скрипт: {fileName}"); } })
-                },*/
+                {
+                    "SpawnEntity", (Func<string, string, LuaTable, Entity>)((Name, Texture, SpawnPoint) =>
+                    { return new Entity(Name, Texture, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])) ); })
+                },
+                {
+                    "GetEntityTable", (Action<LuaTable>)((table) =>
+                    {
+                        foreach (var kv in Entity.EntityDictionary)
+                            table[kv.Key] = kv.Value;
+                    })
+                },
+                {
+                    "SpawnNpc", (Func<string, int, LuaTable, string, Npc>)((Name, HP, SpawnPoint, Texture) =>
+                    { return new Npc(Name, HP, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])), Texture); })
+                },
+                {
+                    "GetNpcTable", (Action<LuaTable>)((table) =>
+                    {
+                        foreach (var kv in Npc.NpcDictionary)
+                            table[kv.Key] = kv.Value;
+                    })
+                },
+                {
+                    "SpawnPlayer", (Func<string, int, LuaTable, string, Player>)((Name, HP, SpawnPoint, Texture) =>
+                    { return new Player(Name, HP, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])), Texture); })
+                },
+                {
+                    "GetCurrentPlayer", (Func<Player?>)(() => { return Player.CurrentPlayer; } )
+                },
+                {
+                    "include", (Action<string>)((path) =>
+                    {
+                        if (_includes.Contains(path))
+                            return;
+
+                        path = path.Replace("..", "");
+                        try
+                        {
+                            _state._G.DoFile($"game/lua/{path}");
+                            _includes.Add(path);
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.Log($"Не удалось выполнить скрипт game/lua/{path}: {ex}");
+                        }
+                    })
+                },
             };
-foreach (var (luaFunc, csFunc) in CStoLua)
+            foreach (var (luaFunc, csFunc) in CStoLua)
                 _state._G[luaFunc] = csFunc;
 
             //
             // Создание функций методами самой Lua или костыляция API функций выше
             //
             _state._G.DoString("""
+
+                os.execute = nil
+                io.popen = nil
+                debug = nil
+                loadfile = nil
+                require = nil
+                dofile = nil
 
                 Writeln = print
                 Write = io.write
@@ -122,7 +169,7 @@ foreach (var (luaFunc, csFunc) in CStoLua)
                     oldSetConVar(ReturnTable(...))
                 end
 
-                """);
+             """);
         }
     }
 }

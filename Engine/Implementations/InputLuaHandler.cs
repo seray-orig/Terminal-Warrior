@@ -5,7 +5,7 @@ using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.Engine.Implementations
 {
-    public class InputLuaHandler : InputHandler
+    public sealed class InputLuaHandler : InputHandler
     {
         private StringBuilder _readKey = new StringBuilder();
         private StringBuilder _readChar = new StringBuilder();
