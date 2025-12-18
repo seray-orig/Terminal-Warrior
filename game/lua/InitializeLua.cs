@@ -9,6 +9,7 @@
 using NLua;
 using System.Text;
 using Terminal_Warrior.Engine;
+using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
@@ -35,6 +36,27 @@ namespace Terminal_Warrior.game.lua
             Dictionary<string, object> CStoLua = new Dictionary<string, object>()
             {
                 {
+                    "WriteLayer", (Action<LuaTable>)((args) =>
+                    {
+                        int layer = Convert.ToInt32(args[1]);
+                        args[1] = null;
+                        try
+                        {
+                            ConsoleExtended.AddLayer(new Action(() =>
+                            {
+                                try
+                                {
+                                    Console.SetCursorPosition(Convert.ToInt32(args[2]), Convert.ToInt32(args[3]));
+                                    args[2] = null; args[3] = null;
+                                } catch {}
+                                foreach (dynamic item in args)
+                                    Console.Write(item.Value);
+                            }), layer);
+                        }
+                        catch(Exception ex) { _logger.Log($"Сцена {_sceneManager.CurrentScene} Не указан слой или позиция для WriteLayer(): {ex.Message}"); }
+                    })
+                },
+                {
                     "ScrW", (Func<int>)(() => { return _state.ScreenWidth; })
                 },
                 {
@@ -56,20 +78,21 @@ namespace Terminal_Warrior.game.lua
                     "ShutDownGame", (Action)(() =>  { _state.ShutDownGame(); })
                 },
                 {
-                    "CreateConVar", (Func<LuaTable, List<object>>)((args) => {
+                    "CreateConVar", (Func<LuaTable, bool>)((args) => {
                         if (!_state.ConVarList.ContainsKey((string)args[1]))
                         {
                             var convar = new ConVar(args);
-                            if (convar.GetConVar() == null)
-                                return new List<object>(){ false, "значение переменной равно null" };
                             _state.ConVarList.Add((string)args[1], convar);
-                            return new List<object>(){ true, "переменная создана" };
+                            return true;
                         }
-                        return new List<object>(){ false, "переменная с таким именем уже существует" };
+                        return false;
                     })
                 },
                 {
-                    "SetConVar", (Action<LuaTable>)((args) => { _convar[(string)args[1]].SetConVar(args); })
+                    "SetConVar", (Action<LuaTable>)((args) => {
+                        try { _convar[(string)args[1]].SetConVar(args); }
+                        catch (Exception ex) { _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} не существует. {ex.Message}"); }
+                    })
                 },
                 {
                     "GetConVar", (Func<string, object>)((name) => { return _convar[name].GetConVar(); })
@@ -78,8 +101,8 @@ namespace Terminal_Warrior.game.lua
                     "Log", (Func<LuaTable, bool>)((message) => { return _logger.Log(message); })
                 },
                 {
-                    "SpawnEntity", (Func<string, string, LuaTable, Entity>)((Name, Texture, SpawnPoint) =>
-                    { return new Entity(Name, Texture, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])) ); })
+                    "SpawnEntity", (Func<string, LuaTable, Entity>)((Name, SpawnPoint) =>
+                    { return new Entity(Name, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])) ); })
                 },
                 {
                     "GetEntityTable", (Action<LuaTable>)((table) =>
@@ -89,29 +112,14 @@ namespace Terminal_Warrior.game.lua
                     })
                 },
                 {
-                    "SpawnNpc", (Func<string, int, LuaTable, string, Npc>)((Name, HP, SpawnPoint, Texture) =>
-                    { return new Npc(Name, HP, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])), Texture); })
-                },
-                {
-                    "GetNpcTable", (Action<LuaTable>)((table) =>
-                    {
-                        foreach (var kv in Npc.NpcDictionary)
-                            table[kv.Key] = kv.Value;
-                    })
-                },
-                {
-                    "SpawnPlayer", (Func<string, int, LuaTable, string, Player>)((Name, HP, SpawnPoint, Texture) =>
-                    { return new Player(Name, HP, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])), Texture); })
-                },
-                {
-                    "GetCurrentPlayer", (Func<Player?>)(() => { return Player.CurrentPlayer; } )
-                },
-                {
+                    // Одна из ключевых команд - подключает скрипты внутри скриптов
                     "include", (Action<string>)((path) =>
                     {
+                        // Подключает один раз
                         if (_includes.Contains(path))
                             return;
 
+                        // Блокируем доступ к родительским каталогам
                         path = path.Replace("..", "");
                         try
                         {
@@ -120,7 +128,7 @@ namespace Terminal_Warrior.game.lua
                         }
                         catch(Exception ex)
                         {
-                            _logger.Log($"Не удалось выполнить скрипт game/lua/{path}: {ex}");
+                            _logger.Log($"Не удалось выполнить скрипт game/lua/{path}: {ex.Message}");
                         }
                     })
                 },
@@ -140,8 +148,8 @@ namespace Terminal_Warrior.game.lua
                 require = nil
                 dofile = nil
 
-                Writeln = print
                 Write = io.write
+                Writeln = print
 
                 local function ReturnTable(...)
                     local LuaTable = {}
@@ -151,6 +159,11 @@ namespace Terminal_Warrior.game.lua
                     return LuaTable
                 end
 
+                local oldWriteLayer = WriteLayer
+                function WriteLayer(...)
+                    oldWriteLayer(ReturnTable(...))
+                end
+
                 local oldLod = Log
                 Log = function(...)
                     oldLod(ReturnTable(...))
@@ -158,9 +171,10 @@ namespace Terminal_Warrior.game.lua
 
                 local oldCreateConVar = CreateConVar
                 CreateConVar = function(...)
-                    local list = oldCreateConVar(ReturnTable(...))
-                    if (list[0] == false) then  -- list[0] - удалось создать или нет (true / false)
-                        Log(string.format("Не удалось создать convar: %s %s", ..., list[1]))    -- list[1] сообщение
+                    local args = {...}
+                    local succeeded = oldCreateConVar(ReturnTable(...))
+                    if (not succeeded) then
+                        Log("ConVar с именем " .. args[1] .. " уже существует")
                     end
                 end
 

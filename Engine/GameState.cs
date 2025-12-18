@@ -88,7 +88,6 @@ namespace Terminal_Warrior.Engine
                     else 
                         _value = text;
                         break;
-
                 default:
                     _value = args[2];
                     break;

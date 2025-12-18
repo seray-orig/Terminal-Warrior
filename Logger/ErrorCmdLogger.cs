@@ -17,6 +17,11 @@ namespace Terminal_Warrior.Logger
             if (!_messageValidator.IsValid(message))
                 return false;
 
+            return StaticLog(message);
+        }
+
+        public static bool StaticLog(params object[] message)
+        {
             // Как же тяжело работать с консолью ;(
             // Она не предназначена для игр, поэтому приходится костылять
             // иначе сообщения вызванные до рендера сотрутся.
@@ -62,6 +67,5 @@ namespace Terminal_Warrior.Logger
 
             return true;
         }
-
     }
 }

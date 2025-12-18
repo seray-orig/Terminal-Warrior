@@ -40,7 +40,7 @@ namespace Terminal_Warrior.Engine
         {
             Console.Clear();
             Console.CursorVisible = false;
-            Console.Title = "Terminal Warrior";
+            Console.Title = _convar["game_title"].GetConVar();
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
 

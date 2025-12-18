@@ -64,21 +64,20 @@ namespace Terminal_Warrior.game.lua
                 }
             }
 
-            _configWatcher = new("game/cfg", "config.lua");
-            _configWatcher.EnableRaisingEvents = true;
-            _configWatcher.Created += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
-            _configWatcher.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
-
             if (!File.Exists(_configPath))
             {
                 File.Create(_configPath).Close();
                 File.WriteAllText(_configPath, new StreamReader(Assembly.GetExecutingAssembly()
                     .GetManifestResourceStream("Terminal_Warrior.game.cfg.config.lua")!, Encoding.UTF8).ReadToEnd());
             }
-
             DoConfig();
+
+            _configWatcher = new("game/cfg", "config.lua");
+            _configWatcher.EnableRaisingEvents = true;
+            _configWatcher.Created += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Changed += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Deleted += new FileSystemEventHandler((sender, e) => DoConfig());
+            _configWatcher.Renamed += new RenamedEventHandler((sender, e) => DoConfig());
 
             //
             // Сцены

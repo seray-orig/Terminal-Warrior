@@ -7,33 +7,30 @@ namespace Terminal_Warrior.Engine.Implementations
 {
     public sealed class InputLuaHandler : InputHandler
     {
-        private StringBuilder _readKey = new StringBuilder();
-        private StringBuilder _readChar = new StringBuilder();
         public InputLuaHandler(GameContext gameContext) : base(gameContext) { }
+
         public override void Handle()
         {
             while (Console.KeyAvailable)
             {
                 var key = Console.ReadKey();
-                _readKey.Clear(); _readKey.Append(key.Key.ToString());
-                _readChar.Clear(); _readChar.Append(key.KeyChar);
 
-                // Перехват нажатия ~ на открытие консоли на любой сцене
-                if (_readChar.ToString() == "~" && _sceneManager.CurrentScene != "cmd")
+                // Перехват нажатия на открытие консоли на любой сцене
+                if (key.KeyChar == _convar["second_scene_char"].GetConVar() && _sceneManager.CurrentScene != _convar["second_scene_name"].GetConVar())
                 {
                     _sceneManager.SetScene("cmd");
                 }
-                else if (_readChar.ToString() == "~" && _sceneManager.CurrentScene == "cmd")
+                else if (key.KeyChar == _convar["second_scene_char"].GetConVar() && _sceneManager.CurrentScene == _convar["second_scene_name"].GetConVar())
                 {
                     _sceneManager.SetScene(_sceneManager.PreviousScene);
                 }
                 // Перехват нажатия на перезагрузку Lua
-                else if (_readChar.ToString() == "}")
+                else if (key.KeyChar == _convar["hot_lua_reload_char"].GetConVar())
                 {
                     _luaContext.HotLuaReload();
                 }
 
-                _sceneManager.CallFunc("InputHandler", _readKey.ToString(), _readChar.ToString());
+                _sceneManager.CallFunc("InputHandler", key.Key.ToString(), Convert.ToString(key.KeyChar));
             }
         }
     }

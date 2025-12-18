@@ -8,11 +8,8 @@
  * Кастомные из папки game/scenes "File", выполняются как файл.
  */
 
-using NLua;
-using System.Reflection;
 using System.Text;
 using Terminal_Warrior.Engine;
-using Terminal_Warrior.Engine.Core;
 
 namespace Terminal_Warrior.game.scenes
 {
@@ -26,26 +23,11 @@ namespace Terminal_Warrior.game.scenes
             _logger = logger;
         }
 
-        private StringBuilder _currentScene = new("MainMenuTest");
+        private StringBuilder _currentScene = new("MainMenu");
         public string CurrentScene { get { return _currentScene.ToString(); } }
         private StringBuilder _previousScene = new();
-        public string PreviousScene {get { return _previousScene.ToString(); } }
-        private Dictionary<string, (string, string)> _scenes = new()
-        {
-            {   // Эти сцены зашиты в игру
-                "MainMenu", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.game.scenes.MainMenu.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-            {
-                "cmd", (
-                "Internal",
-                new StreamReader(Assembly.GetExecutingAssembly()
-                .GetManifestResourceStream("Terminal_Warrior.game.scenes.cmd.lua")!, Encoding.UTF8).ReadToEnd())
-            },
-        };
-        public Dictionary<string, (string, string)> Scenes { get { return _scenes; } }
+        public string PreviousScene { get { return _previousScene.ToString(); } }
+        private readonly Dictionary<string, string> _scenes = new();
         public void SetScene(string scene)
         {
             _previousScene.Clear(); _previousScene.Append(_currentScene);
@@ -53,7 +35,7 @@ namespace Terminal_Warrior.game.scenes
         }
         public void AddScene(string Name)
         {
-            if (!_scenes.ContainsKey(Name)) _scenes.Add(Name, ("File", $"game/scenes/{Name}.lua"));
+            if (!_scenes.ContainsKey(Name)) _scenes.Add(Name, $"game/scenes/{Name}.lua");
         }
         public void RemoveScene(string Name)
         {
@@ -62,25 +44,15 @@ namespace Terminal_Warrior.game.scenes
 
         public void CallFunc(string functionName, params object[] args)
         {
-            if (!_scenes.TryGetValue(CurrentScene, out var sceneData))
+            if (!_scenes.TryGetValue(CurrentScene, out var scenePath))
             {
                 _logger.Log($"{CurrentScene}.lua Сцена Lua не найдена.");
                 return;
             }
-            (string Mode, string luaCode) = sceneData;
 
-            if (Mode == "Internal")
-            {
-                try { _state._G.DoString(luaCode); }
-                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
-            }
-            else if (Mode == "File")
-            {
-                try { _state._G.DoFile(luaCode); }
-                catch (Exception ex) { _logger.Log($"{CurrentScene} {ex.Message}"); }
-            }
-            else { _logger.Log($"{CurrentScene} Неверный режим сцены - {Mode}"); return; }
-            
+            try { _state._G.DoFile(scenePath); }
+            catch (Exception ex) { _logger.Log($"Сцена {CurrentScene}.lua При выполнении скрипта: {ex.Message}"); }
+
             try { _state._G.GetFunction(functionName)?.Call(args); }
             catch (Exception ex) { _logger.Log($"Сцена {CurrentScene}.lua При вызове {functionName}(): {ex.Message}"); }
 
