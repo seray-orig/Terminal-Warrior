@@ -82,20 +82,40 @@ namespace Terminal_Warrior.game.lua
                         if (!_state.ConVarList.ContainsKey((string)args[1]))
                         {
                             var convar = new ConVar(args);
-                            _state.ConVarList.Add((string)args[1], convar);
-                            return true;
+                            if (convar.GetConVar() != null)
+                            {
+                                _state.ConVarList.Add((string)args[1], convar);
+                                return true;
+                            }
+                            else
+                            {
+                                _logger.Log($"Сцена {_sceneManager.CurrentScene} CreateConVar({(string)args[1]}) значение равно null");
+                                return false;
+                            }
                         }
+                        _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} уже существует.");
                         return false;
                     })
                 },
                 {
                     "SetConVar", (Action<LuaTable>)((args) => {
-                        try { _convar[(string)args[1]].SetConVar(args); }
-                        catch (Exception ex) { _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} не существует. {ex.Message}"); }
+                        if (_convar.TryGetValue((string)args[1], out var convar))
+                        {
+                            if (args[2] == null)
+                                _logger.Log($"Сцена {_sceneManager.CurrentScene} SetConVar({(string)args[1]}) значение равно null.");
+                            else
+                                convar.SetConVar(args);
+                        }
+                        else
+                            _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} не существует.");
                     })
                 },
                 {
-                    "GetConVar", (Func<string, object>)((name) => { return _convar[name].GetConVar(); })
+                    "GetConVar", (Func<string, object>)((name) => {
+                        if (_convar.TryGetValue(name, out var convar))
+                            return convar.GetConVar();
+                        return null!;
+                    })
                 },
                 {
                     "Log", (Func<LuaTable, bool>)((message) => { return _logger.Log(message); })
@@ -171,11 +191,7 @@ namespace Terminal_Warrior.game.lua
 
                 local oldCreateConVar = CreateConVar
                 CreateConVar = function(...)
-                    local args = {...}
-                    local succeeded = oldCreateConVar(ReturnTable(...))
-                    if (not succeeded) then
-                        Log("ConVar с именем " .. args[1] .. " уже существует")
-                    end
+                    return oldCreateConVar(ReturnTable(...))
                 end
 
                 local oldSetConVar = SetConVar
