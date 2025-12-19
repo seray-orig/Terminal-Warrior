@@ -78,23 +78,16 @@ namespace Terminal_Warrior.game.lua
                     "ShutDownGame", (Action)(() =>  { _state.ShutDownGame(); })
                 },
                 {
-                    "CreateConVar", (Func<LuaTable, bool>)((args) => {
+                    "CreateConVar", (Action<LuaTable>)((args) => {
+                        var convar = new ConVar(args);
+                        if (convar.GetConVar() == null)
+                            _logger.Log($"Сцена {_sceneManager.CurrentScene} CreateConVar({(string)args[1]}) значение равно null");
+
+                        // Создаём, если нет. Меняем значение, если есть.
                         if (!_state.ConVarList.ContainsKey((string)args[1]))
-                        {
-                            var convar = new ConVar(args);
-                            if (convar.GetConVar() != null)
-                            {
-                                _state.ConVarList.Add((string)args[1], convar);
-                                return true;
-                            }
-                            else
-                            {
-                                _logger.Log($"Сцена {_sceneManager.CurrentScene} CreateConVar({(string)args[1]}) значение равно null");
-                                return false;
-                            }
-                        }
-                        _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} уже существует.");
-                        return false;
+                            _state.ConVarList.Add((string)args[1], convar);
+                        else
+                            _convar[(string)args[1]].SetConVar(args);
                     })
                 },
                 {
@@ -191,7 +184,7 @@ namespace Terminal_Warrior.game.lua
 
                 local oldCreateConVar = CreateConVar
                 CreateConVar = function(...)
-                    return oldCreateConVar(ReturnTable(...))
+                    oldCreateConVar(ReturnTable(...))
                 end
 
                 local oldSetConVar = SetConVar
