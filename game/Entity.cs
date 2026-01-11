@@ -6,8 +6,6 @@ namespace Terminal_Warrior.game
 {
     public class Entity
     {
-        public readonly static Dictionary<Guid, Entity> EntityDictionary = new();
-
         public readonly Guid Id;
         public string Name { get; protected set; }
         public (uint, uint) Position { get; protected set; }
@@ -24,8 +22,6 @@ namespace Terminal_Warrior.game
             Id = Guid.NewGuid();
             Name = name;
             SetPosition(coordinates);
-
-            EntityDictionary.Add(Id, this);
         }
 
         public void Move(object left, object top, object speed)
@@ -51,11 +47,6 @@ namespace Terminal_Warrior.game
                 _movePenalty = DateTime.Now;
             }
             catch (Exception ex) { ErrorCmdLogger.StaticLog($"Не удалось сдвинуть энтити {Name}: {ex.Message}"); }
-        }
-
-        public void Kill()
-        {
-            EntityDictionary.Remove(Id);
         }
 
         public override string ToString()

@@ -1,7 +1,4 @@
-﻿using NLua;
-using System.Text;
-using Terminal_Warrior.Engine.Core;
-using Terminal_Warrior.game.scenes;
+﻿using Terminal_Warrior.Engine.Core;
 
 namespace Terminal_Warrior.Engine.Implementations
 {
@@ -16,18 +13,18 @@ namespace Terminal_Warrior.Engine.Implementations
                 var key = Console.ReadKey();
 
                 // Перехват нажатия на открытие консоли на любой сцене
-                if (key.KeyChar == _convar["second_scene_char"].GetConVar() && _sceneManager.CurrentScene != _convar["second_scene_name"].GetConVar())
+                if (key.KeyChar == _convar["second_scene_char"] && _sceneManager.CurrentScene != _convar["second_scene_name"])
                 {
                     _sceneManager.SetScene("cmd");
                 }
-                else if (key.KeyChar == _convar["second_scene_char"].GetConVar() && _sceneManager.CurrentScene == _convar["second_scene_name"].GetConVar())
+                else if (key.KeyChar == _convar["second_scene_char"] && _sceneManager.CurrentScene == _convar["second_scene_name"])
                 {
                     _sceneManager.SetScene(_sceneManager.PreviousScene);
                 }
                 // Перехват нажатия на перезагрузку Lua
-                else if (key.KeyChar == _convar["hot_lua_reload_char"].GetConVar())
+                else if (key.KeyChar == _convar["hot_lua_reload_char"])
                 {
-                    _luaContext.HotLuaReload();
+                    HotLuaReload();
                 }
 
                 _sceneManager.CallFunc("InputHandler", key.Key.ToString(), Convert.ToString(key.KeyChar));

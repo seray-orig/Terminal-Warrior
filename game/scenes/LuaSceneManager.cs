@@ -23,7 +23,7 @@ namespace Terminal_Warrior.game.scenes
             _logger = logger;
         }
 
-        private StringBuilder _currentScene = new("MainMenu");
+        private StringBuilder _currentScene = new("main");
         public string CurrentScene { get { return _currentScene.ToString(); } }
         private StringBuilder _previousScene = new();
         public string PreviousScene { get { return _previousScene.ToString(); } }

@@ -20,18 +20,23 @@ namespace Terminal_Warrior.Engine.Core
     public abstract class CoreContext
     {
         protected readonly GameState _state;
-        protected readonly Dictionary<string, ConVar> _convar;
-        protected readonly LuaContext _luaContext;
+        protected readonly ConVar _convar;
         protected readonly ILogger _logger;
         protected readonly LuaSceneManager _sceneManager;
+        private readonly GameContext _gameContext;
 
         protected CoreContext(GameContext gameContext)
         {
             _state = gameContext._state;
-            _convar = _state.ConVarList;
-            _luaContext = gameContext._luaContext;
+            _convar = _state.ConVar;
             _logger = gameContext._logger;
-            _sceneManager = gameContext._luaContext._sceneManager;
+            _sceneManager = gameContext._sceneManager;
+            _gameContext = gameContext;
+        }
+
+        protected void HotLuaReload()
+        {
+            _gameContext.HotLuaReload();
         }
     }
 }

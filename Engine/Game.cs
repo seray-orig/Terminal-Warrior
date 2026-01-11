@@ -40,7 +40,7 @@ namespace Terminal_Warrior.Engine
         {
             Console.Clear();
             Console.CursorVisible = false;
-            Console.Title = _convar["game_title"].GetConVar();
+            Console.Title = _convar["game_title"];
             Console.OutputEncoding = Encoding.UTF8;
             Console.InputEncoding = Encoding.UTF8;
 
@@ -63,7 +63,7 @@ namespace Terminal_Warrior.Engine
 
                 // Подгон под фпс
                 int elapsed = (int)(DateTime.Now - frameStart).TotalMilliseconds;
-                int delay = Math.Max(0, (1000 / _convar["fps_target"].GetConVar()) - elapsed);
+                int delay = Math.Max(0, (1000 / _convar["fps_target"]) - elapsed);
                 Thread.Sleep(delay);
             }
         }

@@ -5,10 +5,10 @@ namespace Terminal_Warrior.Engine.Implementations
     public sealed class FrameLuaRenderer : FrameRenderer
     {
         public FrameLuaRenderer(GameContext gameContext) : base(gameContext) { }
-        
+
         public override void Render()
         {
-            char DebugChar = _convar["DebugChar"].GetConVar();
+            char DebugChar = _convar["DebugChar"];
 
             // Очистка консоли перед отрисовкой нового кадра
             try { Console.SetCursorPosition(0, 0); }

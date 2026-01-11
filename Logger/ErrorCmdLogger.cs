@@ -1,5 +1,5 @@
-﻿using NLua;
-using Terminal_Warrior.Engine.Core;
+﻿using Terminal_Warrior.Engine.Core;
+using Terminal_Warrior.Logger.Util;
 
 namespace Terminal_Warrior.Logger
 {
@@ -38,31 +38,11 @@ namespace Terminal_Warrior.Logger
                 Console.ResetColor();
                 Console.WriteLine();
             }), 55);
-            void Perebor(object obj)
-            {
-                switch (obj)
-                {
-                    case LuaTable:
-                        LuaTable content = (LuaTable)obj;
-                        foreach (var item in content.Values)
-                            Perebor(item);
-                        break;
-                    case string:
-                        ConsoleExtended.AddLayer(new Action(() => Console.Write(obj)), 55);
-                        break;
-                    case System.Collections.IEnumerable:
-                        dynamic content2 = obj;
-                        foreach (var item in content2)
-                            Perebor(item);
-                        break;
-                    default:
-                        ConsoleExtended.AddLayer(new Action(() => Console.Write(obj)), 55);
-                        break;
-                }
-            }
             foreach (var item in message)
             {
-                Perebor(item);
+                ConsoleExtended.AddLayer(new Action(() =>
+                    Console.Write(Perebor.Do(item)
+                )), 55);
             }
 
             return true;

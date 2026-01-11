@@ -1,5 +1,5 @@
-﻿using NLua;
-using System.Text;
+﻿using System.Text;
+using Terminal_Warrior.Logger.Util;
 
 namespace Terminal_Warrior.Logger
 {
@@ -24,38 +24,10 @@ namespace Terminal_Warrior.Logger
             if (!_fileService.IsFileExist(_path))
                 _fileService.CreateFile(_path);
 
-            // Рекурсивное доставание итоговых объектов, если есть коллекции.
-            // Блок кода, которым я горжусь!
-            // Ни одна нейронка не могла выдать даже похожего результата,
-            // а я написал! (Основано на рекурсивной функции числа Фибоначчи)
             var text = new StringBuilder();
-            void Perebor(object obj)
-            {
-                switch (obj)
-                {
-                    // Не уверен, что LuaTable реализует IEnumerable
-                    case LuaTable:
-                        LuaTable content = (LuaTable)obj;
-                        foreach (var item in content.Values)
-                            Perebor(item);
-                        break;
-                    case string:
-                        // Удивительно, стринг - символьный массив и тоже реализует интерфейс
-                        text.Append(obj);
-                        break;
-                    case System.Collections.IEnumerable:
-                        dynamic content2 = obj;
-                        foreach (var item in content2)
-                            Perebor(item);
-                        break;
-                    default:
-                        text.Append(obj.ToString());
-                        break;
-                }
-            }
             foreach (var item in message)
             {
-                Perebor(item);
+                text.Append(Perebor.Do(item));
             }
 
             if (_lastError.ToString() == text.ToString()) return true;

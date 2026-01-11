@@ -7,16 +7,14 @@ using Terminal_Warrior.Logger;
 
 namespace Terminal_Warrior.Engine
 {
-    public sealed class GameFactory : IFactory<IGame>
+    public static class GameFactory
     {
-        public IGame Create()
+        public static IGame Create()
         {
             GameState state = new();
-            IFactory<ILogger> loggerFactory = new LoggerFactory();
-            ILogger logger = loggerFactory.Create();
+            ILogger logger = new MainLogger();
 
-            var luaContext = new LuaContext(state, logger);
-            var gameContext = new GameContext(state, logger, luaContext);
+            GameContext gameContext = new(state, logger);
 
             InputHandler inputHandler = new InputLuaHandler(gameContext);
             EngineUpdater engineUpdater = new EngineLuaUpdater(gameContext);
@@ -35,29 +33,12 @@ namespace Terminal_Warrior.Engine
     {
         public GameState _state;
         public ILogger _logger;
-        public LuaContext _luaContext;
-        public GameContext(
-            GameState state,
-            ILogger logger,
-            LuaContext luaContext
-        )
-        {
-            _state = state;
-            _logger = logger;
-            _luaContext = luaContext;
-        }
-    }
-
-    public sealed class LuaContext
-    {
-        private readonly GameState _state;
-        private readonly ILogger _logger;
 
         public LuaSceneManager _sceneManager;
         public InitializeLua _luaInit;
         public LuaScriptClinger _luaScriptClinger;
 
-        public LuaContext(
+        public GameContext(
             GameState state,
             ILogger logger
         )
@@ -65,23 +46,22 @@ namespace Terminal_Warrior.Engine
             _state = state;
             _logger = logger;
 
-            _sceneManager = new(state, logger);
-            _luaInit = new(state, logger, _sceneManager);
-            _luaScriptClinger = new(state, logger, _sceneManager);
+            _sceneManager = new(_state, _logger);
+            _luaInit = new(_state, _logger, _sceneManager);
+            _luaScriptClinger = new(_state, _logger, _sceneManager);
         }
 
         /// <summary>
         /// Пересоздаёт окружение Lua со всеми стартовыми параметрами.
         /// Полезно, если Lua померло, например от "C stack overflow".
         /// Не влияет на C# ядро игры, сохраняется текущая сцена.
-        /// Безопасно вызывать в любой точке кода
-        /// (наверное).
+        /// Безопасно вызывать в любой точке кода (наверное).
         /// </summary>
         public void HotLuaReload()
         {
             _state._G.Dispose();
             _state._G = new Lua();
-            _state.ConVarList.Clear();
+            _state.ConVar.Dispose();
 
             _luaInit = new(_state, _logger, _sceneManager);
 

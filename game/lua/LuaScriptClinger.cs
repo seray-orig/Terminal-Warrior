@@ -20,7 +20,6 @@ namespace Terminal_Warrior.game.lua
     public class LuaScriptClinger : IDisposable
     {
         private GameState _state;
-        private Dictionary<string, ConVar> _convar;
         private ILogger _logger;
         private LuaSceneManager _sceneManager;
 
@@ -34,7 +33,6 @@ namespace Terminal_Warrior.game.lua
         public LuaScriptClinger(GameState state, ILogger logger, LuaSceneManager sceneManager)
         {
             _state = state;
-            _convar = _state.ConVarList;
             _logger = logger;
             _sceneManager = sceneManager;
 

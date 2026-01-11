@@ -9,7 +9,6 @@
 using NLua;
 using System.Text;
 using Terminal_Warrior.Engine;
-using Terminal_Warrior.Engine.Core;
 using Terminal_Warrior.game.scenes;
 
 namespace Terminal_Warrior.game.lua
@@ -17,14 +16,12 @@ namespace Terminal_Warrior.game.lua
     public class InitializeLua
     {
         private GameState _state;
-        private Dictionary<string, ConVar> _convar;
         private ILogger _logger;
         private LuaSceneManager _sceneManager;
-        private List<string> _includes = new(); // Хранит список скриптов подключенных к среде
+        private List<string> _includes = new(); // Хранит список скриптов подключенных к среде Lua
         public InitializeLua(GameState state, ILogger logger, LuaSceneManager sceneManager)
         {
             _state = state;
-            _convar = _state.ConVarList;
             _logger = logger;
             _sceneManager = sceneManager;
 
@@ -36,34 +33,42 @@ namespace Terminal_Warrior.game.lua
             Dictionary<string, object> CStoLua = new Dictionary<string, object>()
             {
                 {
-                    "WriteLayer", (Action<LuaTable>)((args) =>
-                    {
-                        int layer = Convert.ToInt32(args[1]);
-                        args[1] = null;
-                        try
-                        {
-                            ConsoleExtended.AddLayer(new Action(() =>
-                            {
-                                try
-                                {
-                                    Console.SetCursorPosition(Convert.ToInt32(args[2]), Convert.ToInt32(args[3]));
-                                    args[2] = null; args[3] = null;
-                                } catch {}
-                                foreach (dynamic item in args)
-                                    Console.Write(item.Value);
-                            }), layer);
-                        }
-                        catch(Exception ex) { _logger.Log($"Сцена {_sceneManager.CurrentScene} Не указан слой или позиция для WriteLayer(): {ex.Message}"); }
-                    })
-                },
-                {
                     "ScrW", (Func<int>)(() => { return _state.ScreenWidth; })
                 },
                 {
                     "ScrH", (Func<int>)(() => { return _state.ScreenHeight; })
                 },
                 {
-                    "SetCursorPos", (Action<int, int>)((left, top) => { try { Console.SetCursorPosition(left, top); } catch { } })
+                    "SetBackgroundColor", (Action<string>)((text) =>
+                    {
+                        if (text == "Reset")
+                            Console.ResetColor();
+                        else if (Enum.TryParse<ConsoleColor>(text, out ConsoleColor color))
+                            Console.BackgroundColor = color;
+                    })
+                },
+                {
+                    "SetForegroundColor", (Action<string>)((text) =>
+                    {
+                        if (text == "Reset")
+                            Console.ResetColor();
+                        else if (Enum.TryParse<ConsoleColor>(text, out ConsoleColor color))
+                            Console.ForegroundColor = color;
+                    })
+                },
+                {
+                    "SetCursorPos", (Func<int, int, bool>)((left, top) =>
+                    {
+                        try
+                        {
+                            Console.SetCursorPosition(left, top);
+                            return true;
+                        }
+                        catch
+                        {
+                            return false;
+                        }
+                    })
                 },
                 {
                     "CurL", (Func<int>)(() => { return Console.GetCursorPosition().Left; })
@@ -79,35 +84,21 @@ namespace Terminal_Warrior.game.lua
                 },
                 {
                     "CreateConVar", (Action<LuaTable>)((args) => {
-                        var convar = new ConVar(args);
-                        if (convar.GetConVar() == null)
-                            _logger.Log($"Сцена {_sceneManager.CurrentScene} CreateConVar({(string)args[1]}) значение равно null");
-
-                        // Создаём, если нет. Меняем значение, если есть.
-                        if (!_state.ConVarList.ContainsKey((string)args[1]))
-                            _state.ConVarList.Add((string)args[1], convar);
-                        else
-                            _convar[(string)args[1]].SetConVar(args);
+                        _state.ConVar[(string)args[1]] = args;
+                        if (_state.ConVar[(string)args[1]] == null)
+                            _logger.Log($"Сцена {_sceneManager.CurrentScene} CreateConVar({(string)args[1]}) Имя или значение равно null");
                     })
                 },
-                {
+                {   // Решил разделить создание и изменение значения консольной переменной явно. Хотя эти две функции взаимозаменяемы
                     "SetConVar", (Action<LuaTable>)((args) => {
-                        if (_convar.TryGetValue((string)args[1], out var convar))
-                        {
-                            if (args[2] == null)
-                                _logger.Log($"Сцена {_sceneManager.CurrentScene} SetConVar({(string)args[1]}) значение равно null.");
-                            else
-                                convar.SetConVar(args);
-                        }
-                        else
-                            _logger.Log($"Сцена {_sceneManager.CurrentScene} ConVar с именем {(string)args[1]} не существует.");
+                        _state.ConVar[(string)args[1]] = args;
+                        if (_state.ConVar[(string)args[1]] == null)
+                            _logger.Log($"Сцена {_sceneManager.CurrentScene} SetConVar({(string)args[1]}) Значение или имя равно null");
                     })
                 },
                 {
                     "GetConVar", (Func<string, object>)((name) => {
-                        if (_convar.TryGetValue(name, out var convar))
-                            return convar.GetConVar();
-                        return null!;
+                        return _state.ConVar[name];
                     })
                 },
                 {
@@ -116,13 +107,6 @@ namespace Terminal_Warrior.game.lua
                 {
                     "SpawnEntity", (Func<string, LuaTable, Entity>)((Name, SpawnPoint) =>
                     { return new Entity(Name, (Convert.ToUInt32(SpawnPoint[1]), Convert.ToUInt32(SpawnPoint[2])) ); })
-                },
-                {
-                    "GetEntityTable", (Action<LuaTable>)((table) =>
-                    {
-                        foreach (var kv in Entity.EntityDictionary)
-                            table[kv.Key] = kv.Value;
-                    })
                 },
                 {
                     // Одна из ключевых команд - подключает скрипты внутри скриптов
