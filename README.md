@@ -79,6 +79,15 @@ Write('Hello ')
 Writeln('World!')
 -- Являются красивой копией функций io.write() и print() соответственно.
 
+SetBackgroundColor('Red')
+SetForegroundColor('DarkGreen')
+SetBackgroundColor('Reset')
+-- Установка цвета печатываемого символа и его фона.
+-- Принимают строковые имена всех значений енумератора ConsoleColor:
+-- Black, DarkBlue, DarkGreen, DarkCyan, DarkRed, DarkMagenta, DarkYellow,
+-- Gray, DarkGray, Blue, Green, Cyan, Red, Magenta, Yellow, White.
+-- При кастомном значении Reset для любой функции, сбрасываются цвета и символа, и фона.
+
 ScrW()
 ScrH()
 -- Возвращают текущий размер консоли в символах: Width, Height соответственно.
